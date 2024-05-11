@@ -1,0 +1,25 @@
+{
+    "titre": "Sensors",
+    "application": {
+        "nom": "Sensors and switches"
+    },
+    "menu": {
+        "configuration": "Configuration",
+        "domaines": "Domains",
+        "information": "Information",
+        "language": "Language",
+        "portail": "Portal",
+        "deconnecter": "Logout"
+    },
+    "layout-millegrilles": {
+        "modal-info-titre": "MilleGrille Information",
+        "modal-info-application": "Application",
+        "modal-info-nom": "Name",
+        "modal-info-version": "Version",
+        "modal-info-date": "Date",
+        "modal-info-systeme": "System",
+        "idmg": "MilleGrille Id (IDMG)",
+        "usager-titre": "User",
+        "usager-nom": "Name"
+    }
+}
