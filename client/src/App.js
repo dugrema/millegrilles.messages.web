@@ -164,7 +164,7 @@ function ApplicationSenseursPassifs(props) {
 function Attente(_props) {
   return (
       <div>
-          <p className="titleinit">Preparation de Coup D'Oeil</p>
+          <p className="titleinit">Preparation de Messages</p>
           <p>Veuillez patienter durant le chargement de la page.</p>
           <ol>
               <li>Initialisation</li>
