@@ -19,8 +19,8 @@ export async function syncMessages(userId, bucket, docs, opts) {
     for await (const message of docs) {
         const { message_id, derniere_modification } = message
         const messageDoc = await store.get(message_id)
-        messageDoc.syncTime = syncTime
         if(messageDoc) {
+            messageDoc.syncTime = syncTime
             if(messageDoc.supprime !== message.supprime) {
                 // Mettre a jour flag supprime
                 messageDoc.supprime = !!message.supprime
@@ -42,7 +42,7 @@ export async function syncMessages(userId, bucket, docs, opts) {
 
         } else {
             // Message inconnu
-            await store.put({...message, userId, bucket, dirty: true, dechiffre: false})
+            await store.put({...message, syncTime, user_id: userId, bucket, dirty: true, dechiffre: false})
             messagesDirty.push(message_id)
         }
     }
@@ -79,6 +79,36 @@ export async function deleteDocuments(tuuids) {
     for await (const tuuid of tuuids) {
         await store.delete(tuuid)
     }
+}
+
+/** Recupere les messages avec flag dirty ou dechiffre a true */
+export async function getIncomplets(userId, bucket) {
+    const db = await ouvrirDB()
+
+    const store = db.transaction(STORE_MESSAGES_USAGERS, 'readonly').store
+    const index = store.index('userBucket')
+    console.debug("getIncomplets Index : %O (userId: %s, bucket: %s)", index, userId, bucket)
+    let curseur = await index.openCursor([userId, bucket])
+    console.debug("getIncomplets Curseur : ", curseur)
+
+    const messagesDirty = [], messagesChiffres = []
+    while(curseur) {
+        const {message_id, dirty, dechiffre, message} = curseur.value
+        if(!dechiffre && !dirty) {
+            messagesChiffres.push({message_id, cle_id: message.cle_id})
+        } else if(dirty) {
+            messagesDirty.push(message_id)
+        }
+        curseur = await curseur.continue()
+    }
+
+    return {dirty: messagesDirty, chiffres: messagesChiffres}
+}
+
+export async function getMessage(messageId) {
+    const db = await ouvrirDB()
+    const store = db.transaction(STORE_MESSAGES_USAGERS, 'readonly').store
+    return store.get(messageId)
 }
 
 // cuuid falsy donne favoris

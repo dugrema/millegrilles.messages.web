@@ -10,7 +10,6 @@ function creerThunks(actions, nomSlice) {
     }
 
     async function traiterSyncMessages(workers, opts, dispatch, getState) {
-        console.debug("State : ", getState())
         const bucket = getState().messages.bucket
         const userId = getState().messages.userId
         let skip = 0
@@ -36,12 +35,40 @@ function creerThunks(actions, nomSlice) {
         }
 
         // Todo : Cleanup messages qui n'ont pas ete vus (syncTime vieux)
-        
+
+    }
+
+    /** Change le bucket, redemarre le traitement des fichiers dirty ou chiffre a partir de IDB pour un bucket */
+    function changerBucket(workers, bucket, opts) {
+        opts = opts || {}
+        bucket = bucket || 'reception'
+        return (dispatch, getState) => traiterChangerBucket(workers, bucket, opts, dispatch, getState)
+    }
+
+    async function traiterChangerBucket(workers, bucket, opts, dispatch, getState) {
+        dispatch(actions.setBucket(bucket))
+        const userId = getState().messages.userId
+
+        const {dirty, chiffres} = await workers.messagesDao.getIncomplets(userId, bucket)
+        console.debug("Message dirty: %O, chiffres: %O", dirty, chiffres)
+
+        // Requete fichiers chiffres qui ne sont pas dirty
+        if(chiffres.length > 0) {
+            dispatch(actions.pushDechiffrage({liste: chiffres}))
+        }
+
+        // Requete fichiers dirty
+        if(dirty.length > 0) {
+            dispatch(actions.pushDirty({liste: dirty}))
+        }
+
+        // Synchroniser les messages
+        await traiterSyncMessages(workers, opts, dispatch, getState)
     }
 
     // Async actions
     const thunks = { 
-        syncMessages,
+        syncMessages, changerBucket,
     }
 
     return thunks

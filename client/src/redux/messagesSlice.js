@@ -84,6 +84,10 @@ function pushDechiffrageAction(state, action) {
     state.listeDechiffrage = liste
 }
 
+function clearDechiffrageAction(state) {
+    state.listeDechiffrage = []
+}
+
 function pushDirtyAction(state, action) {
     let {liste: payload, syncTime, clear} = action.payload
 
@@ -104,21 +108,6 @@ function setDirtyAction(state, action) {
     state.listeDirty = action.payload || []
 }
 
-/** @returns CleIds de tous les messages chiffres */
-function getClesMessagesChiffresAction(state) {
-    const clesSet = new Set()
-    // Dedupe les cles
-    for(const message of state.listeDechiffrage) {
-        clesSet.add(message.cle_id)
-    }
-    // Convertir set en liste
-    const cles = []
-    for(const cle of clesSet) {
-        cles.push(cle)
-    }
-    return cles
-}
-
 /** @returns Message chiffre ou null si aucun message */
 function getProchainMessageChiffreAction(state) {
     return state.listeDechiffrage.unshift()
@@ -131,7 +120,7 @@ function clearAction(state) {
     state.syncTime = null
 }
 
-function changerBucketAction(state, action) {
+function setBucketAction(state, action) {
     state.bucket = action.payload
     // Clear
     clearAction(state)
@@ -197,23 +186,23 @@ const messagesSlice = createSlice({
     initialState,
     reducers: {
         setUserId: setUserIdAction,
-        changerBucket: changerBucketAction,
+        setBucket: setBucketAction,
         push: pushAction, 
         mergeMessage: mergeMessageAction,
         clear: clearAction,
         setSortKeys: setSortKeysAction,
         pushDirty: pushDirtyAction,
         pushDechiffrage: pushDechiffrageAction,
-        getClesMessagesChiffres: getClesMessagesChiffresAction,
         getProchainMessageChiffre: getProchainMessageChiffreAction,
         setDirty: setDirtyAction,
+        clearDechiffrage: clearDechiffrageAction,
     }
 })
 
 export const { 
-    setUserId, changerBucket, push, mergeMessage, clear, setSortKeys,
+    setUserId, setBucket, push, mergeMessage, clear, setSortKeys,
     pushDechiffrage, getClesMessagesChiffres, getProchainMessageChiffre,
-    pushDirty, setDirty,
+    pushDirty, setDirty, clearDechiffrage,
 } = messagesSlice.actions
 
 export default messagesSlice.reducer

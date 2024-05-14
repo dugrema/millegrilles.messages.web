@@ -9,7 +9,7 @@ import ErrorBoundary from './ErrorBoundary'
 import useWorkers, {useEtatConnexion, useEtatConnexionOpts, WorkerProvider, useUsager, useFormatteurPret, useInfoConnexion, useEtatPret} from './WorkerContext'
 import storeSetup from './redux/store'
 
-import { setUserId as setUserIdMessages, changerBucket, thunks as thunksMessages } from './redux/messagesSlice'
+import { setUserId as setUserIdMessages, thunks as thunksMessages } from './redux/messagesSlice'
 
 import i18n from './i18n'
 
@@ -186,9 +186,8 @@ function ReceptionMessageListener(props) {
     // Ajouter listeners messages
 
     // Demarrer sync messages
-    dispatch(changerBucket('reception'))
-    dispatch(thunksMessages.syncMessages(workers))
-      .catch(err=>console.error("ReceptionMessageListener Erreur syncMessages ", err))
+    dispatch(thunksMessages.changerBucket(workers, 'reception'))
+      .catch(err=>console.error("ReceptionMessageListener Erreur changerBucket/syncMessages ", err))
 
     return () => {
       // Retirer listeners messages

@@ -19,6 +19,13 @@ function getMessagesParIds(messageIds) {
     domaine: CONST_DOMAINE_MESSAGES, action: 'getMessagesParIds', ajouterCertificat: true})
 }
 
+function dechiffrerCles(cleIds) {
+  const requete = {cle_ids: cleIds}
+  return connexionClient.emitWithAck('dechiffrerCles', requete, {
+    kind: MESSAGE_KINDS.KIND_REQUETE, 
+    domaine: CONST_DOMAINE_MESSAGES, action: 'dechiffrerCles', ajouterCertificat: true})
+}
+
 // Evenements
 
 // async function ecouterEvenementsAppareilsUsager(cb) {
@@ -35,7 +42,7 @@ expose({
     ...connexionClient,
 
     // Requetes et commandes privees
-    syncMessages, getMessagesParIds,
+    syncMessages, getMessagesParIds, dechiffrerCles,
 
     // Event listeners proteges
     //ecouterEvenementsAppareilsUsager, retirerEvenementsAppareilsUsager,

@@ -19,6 +19,7 @@ class SocketIoMessagesHandler(SocketIoHandler):
 
         self._sio.on('syncMessages', handler=self.requete_sync_messages)
         self._sio.on('getMessagesParIds', handler=self.requete_messages_par_ids)
+        self._sio.on('dechiffrerCles', handler=self.requete_dechiffrer_cles)
         # self._sio.on('majConfigurationUsager', handler=self.maj_configuration_usager)
 
         # self._sio.on('ecouterEvenementsAppareilsUsager', handler=self.ecouter_appareils_usager)
@@ -35,6 +36,10 @@ class SocketIoMessagesHandler(SocketIoHandler):
     async def requete_messages_par_ids(self, sid: str, message: dict):
         return await self.executer_requete(sid, message,
                                            ConstantesMessages.NOM_DOMAINE, 'getMessagesParIds')
+
+    async def requete_dechiffrer_cles(self, sid: str, message: dict):
+        return await self.executer_requete(sid, message,
+                                           ConstantesMessages.NOM_DOMAINE, 'dechiffrerCles')
 
     async def maj_configuration_usager(self, sid: str, message: dict):
         return await self.executer_commande(sid, message,

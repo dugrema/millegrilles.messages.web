@@ -1,6 +1,7 @@
 import { wrap, releaseProxy } from 'comlink'
 import { usagerDao } from '@dugrema/millegrilles.reactjs'
 import * as messagesDao from '../redux/messagesIdbDao'
+import buildClesDao from './clesDao'
 
 // Exemple de loader pour web workers
 export function setupWorkers() {
@@ -19,6 +20,7 @@ export function setupWorkers() {
   // Pseudo-worker
   workers.usagerDao = usagerDao                   // IDB usager
   workers.messagesDao = messagesDao
+  workers.clesDao = buildClesDao(workers)
 
   const ready = wireWorkers(workers)
 
