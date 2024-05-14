@@ -4,8 +4,7 @@
         "nom": "Sensors and switches"
     },
     "menu": {
-        "configuration": "Configuration",
-        "domaines": "Domains",
+        "reception": "Reception",
         "information": "Information",
         "language": "Language",
         "portail": "Portal",

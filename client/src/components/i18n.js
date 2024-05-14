@@ -5,8 +5,8 @@ import moment from 'moment'
 
 // the translations
 import 'moment/locale/fr'
-import fr from './senseurspassifs.fr.json'
-import en from './senseurspassifs.en.json'
+import fr from './locales/messages.fr.json'
+import en from './locales/messages.en.json'
 const resources = {fr, en}
 
 function formatterValeur(value, format, lng) {

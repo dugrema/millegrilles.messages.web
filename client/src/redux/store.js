@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import appareils, { appareilsMiddlewareSetup } from './appareilsSlice'
+import messages, { messagesMiddlewareSetup } from './messagesSlice'
 
 function storeSetup(workers) {
 
@@ -7,7 +7,7 @@ function storeSetup(workers) {
   const store = configureStore({
 
     reducer: { 
-      appareils, 
+      messages, 
     },
 
     middleware: (getDefaultMiddleware) => {

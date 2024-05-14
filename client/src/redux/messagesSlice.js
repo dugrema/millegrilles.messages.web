@@ -1,13 +1,12 @@
 import { createSlice, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 
-const SLICE_NAME = 'appareils'
+const SLICE_NAME = 'messages'
 
 const initialState = {
-    listeAppareils: null,               // Liste triee d'appareils
+    listeMessages: null,                // Liste triee de messages
     sortKeys: {key: 'nom', ordre: 1},   // Ordre de tri
     mergeVersion: 0,                    // Utilise pour flagger les changements
 
-    uuidAppareil: null,                // Identificateur d'appareil actif
     userId: '',                         // UserId courant, permet de stocker plusieurs users localement
 }
 
@@ -23,18 +22,14 @@ function setSortKeysAction(state, action) {
     if(state.liste) state.liste.sort(genererTriListe(sortKeys))
 }
 
-function setUuidAppareilAction(state, action) {
-    state.uuidAppareil = action.payload
-}
-
 function pushAction(state, action) {
     const mergeVersion = state.mergeVersion
     state.mergeVersion++
 
     let {liste: payload, clear} = action.payload
-    if(clear === true) state.listeAppareils = []  // Reset liste
+    if(clear === true) state.listeMessages = []  // Reset liste
 
-    let liste = state.listeAppareils || []
+    let liste = state.listeMessages || []
     if( Array.isArray(payload) ) {
         const ajouts = payload.map(item=>{return {...item, '_mergeVersion': mergeVersion}})
         // console.debug("pushAction ajouter ", ajouts)
@@ -49,23 +44,11 @@ function pushAction(state, action) {
     liste.sort(genererTriListe(state.sortKeys))
     console.debug("pushAction liste triee : %O", liste)
 
-    state.listeAppareils = liste
+    state.listeMessages = liste
 }
 
 function clearAction(state) {
-    state.listeAppareils = null
-}
-
-function verifierExpirationAction(state, action) {
-    const expiration = (new Date().getTime() / 1000) - 300  // 5 minutes
-    if(state.listeAppareils) {
-        state.listeAppareils.forEach(item=>{
-            if(item.derniere_lecture < expiration) {
-                // Modifier pour forcer re-rendering
-                item.expiration = expiration
-            }
-        })
-    }
+    state.listeMessages = null
 }
 
 // payload {uuid_appareil, ...data}
@@ -86,7 +69,7 @@ function mergeAppareilAction(state, action) {
         const data = {...(payloadAppareil || {})}
         data['_mergeVersion'] = mergeVersion
 
-        const liste = state.listeAppareils || []
+        const liste = state.listeMessages || []
         
         let peutAppend = false
         if(data.supprime === true) {
@@ -120,28 +103,26 @@ function mergeAppareilAction(state, action) {
     }
 
     // Trier
-    state.listeAppareils.sort(genererTriListe(state.sortKeys))
+    state.listeMessages.sort(genererTriListe(state.sortKeys))
 }
 
-const appareilsSlice = createSlice({
+const messagesSlice = createSlice({
     name: SLICE_NAME,
     initialState,
     reducers: {
         setUserId: setUserIdAction,
-        setUuidAppareil: setUuidAppareilAction,
         push: pushAction, 
         mergeAppareil: mergeAppareilAction,
         clear: clearAction,
         setSortKeys: setSortKeysAction,
-        verifierExpiration: verifierExpirationAction,
     }
 })
 
 export const { 
     setUserId, setUuidAppareil, push, mergeAppareil, clear, setSortKeys, verifierExpiration,
-} = appareilsSlice.actions
+} = messagesSlice.actions
 
-export default appareilsSlice.reducer
+export default messagesSlice.reducer
 
 function genererTriListe(sortKeys) {
     

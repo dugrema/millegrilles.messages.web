@@ -9,7 +9,7 @@ import ErrorBoundary from './ErrorBoundary'
 import useWorkers, {useEtatConnexion, useEtatConnexionOpts, WorkerProvider, useUsager, useFormatteurPret, useInfoConnexion} from './WorkerContext'
 import storeSetup from './redux/store'
 
-import { setUserId as setUserIdAppareils, verifierExpiration } from './redux/appareilsSlice'
+import { setUserId as setUserIdMessages } from './redux/messagesSlice'
 
 import i18n from './i18n'
 
@@ -32,7 +32,7 @@ initI18n(i18n)
 
 const Menu = React.lazy( () => import('./Menu') )
 const Accueil = React.lazy( () => import('./Accueil') )
-// const Configuration = React.lazy( () => import('./Configuration') )
+const Reception = React.lazy( () => import('./Reception') )
 
 // const _contexte = {}  // Contexte global pour comlink proxy callbacks
 
@@ -93,14 +93,8 @@ function LayoutMain(props) {
 
   // Setup userId dans redux
   useEffect(()=>{
-    dispatch(setUserIdAppareils(userId))
+    dispatch(setUserIdMessages(userId))
   }, [dispatch, userId])
-
-  // Intervalle pour entretien appareils
-  useEffect(()=>{
-    const interval = setInterval(()=>dispatch(verifierExpiration()), 20_000)
-    return () => clearInterval(interval)
-  }, [dispatch])
 
   const menu = (
     <Menu
@@ -149,6 +143,7 @@ function ApplicationSenseursPassifs(props) {
 
   let Page = null
   switch(sectionAfficher) {
+    case 'Reception': Page = Reception; break
     default:
       Page = Accueil
   }

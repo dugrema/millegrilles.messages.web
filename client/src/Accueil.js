@@ -9,7 +9,7 @@ import Button from 'react-bootstrap/Button'
 import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
 import useWorkers, {useEtatPret} from './WorkerContext'
-import { push as pushAppareils, mergeAppareil } from './redux/appareilsSlice'
+import { push as pushAppareils, mergeAppareil } from './redux/messagesSlice'
 
 // const AfficherSenseurs = React.lazy( () => import('./AfficherSenseurs') )
 // const SenseurDetail = React.lazy( () => import('./SenseurDetail') )

@@ -44,8 +44,7 @@ function Menu(props) {
         switch(eventKey) {
           case 'portail': window.location = '/millegrilles'; break
           case 'deconnecter': deconnecter(usager.nomUsager); break
-          case 'instances': setSectionAfficher('Instances'); break
-          case 'configuration': setSectionAfficher('Configuration'); break
+          case 'reception': setSectionAfficher('Reception'); break
           case 'information': setShowModalInfo(true); break
           default:
             setSectionAfficher('')
@@ -71,14 +70,10 @@ function Menu(props) {
                 i18nInstance={i18n}>
   
               {estProprietaire?
-                <Nav.Link eventKey="instances" title="Gerer instances/relais">
-                  {t('menu.instances')}
+                <Nav.Link eventKey="reception" title="Reception">
+                  {t('menu.reception')}
                 </Nav.Link>
               :''}
-  
-              <Nav.Link eventKey="configuration" title="Configuration des appareils">
-                  {t('menu.configuration')}
-              </Nav.Link>
   
               <Nav.Link eventKey="information" title="Afficher l'information systeme">
                   {t('menu.information')}

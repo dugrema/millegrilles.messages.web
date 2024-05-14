@@ -1,12 +1,11 @@
 {
-    "titre": "Senseurs Passifs",
+    "titre": "Messages",
     "application": {
-        "nom": "Senseurs Passifs"
+        "nom": "Messages"
     },
     "menu": {
-        "instances": "Instances",
+        "reception": "Reception",
         "configuration": "Configuration",
-        "domaines": "Domaines",
         "information": "Information",
         "language": "Language",
         "portail": "Portail",
