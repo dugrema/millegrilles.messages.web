@@ -1,22 +1,20 @@
 import { configureStore } from '@reduxjs/toolkit'
-import messages, { messagesMiddlewareSetup } from './messagesSlice'
+import messages, { setup } from './messagesSlice'
 
 function storeSetup(workers) {
 
   // Configurer le store redux
   const store = configureStore({
 
-    reducer: { 
-      messages, 
-    },
+    reducer: {messages},
 
     middleware: (getDefaultMiddleware) => {
       
-      // const { appareilsMiddleware } = appareilsMiddlewareSetup(workers)
+      const { dechiffrageMiddleware } = setup(workers)
 
       // Prepend, evite le serializability check
       return getDefaultMiddleware()
-        // .prepend(appareilsMiddleware.middleware)
+        .prepend(dechiffrageMiddleware.middleware)
 
     },
   })

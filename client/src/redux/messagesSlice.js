@@ -1,10 +1,20 @@
 import { createSlice, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
+import dechiffrageMiddlewareListener from './dechiffrageMiddleware'
+import creerThunks from './messagesThunks'
 
 const SLICE_NAME = 'messages'
 
+/**
+ * 
+ * listeMessages : {message_id, date_post, date_traitement, lu, reply_to, sujet}
+ * listeDechiffrage: {message_id, cle_id}
+ * 
+ */
 const initialState = {
     listeMessages: null,                // Liste triee de messages
-    sortKeys: {key: 'nom', ordre: 1},   // Ordre de tri
+    listeDechiffrage: [],               // Liste de messages a dechiffrer
+
+    sortKeys: {key: 'dateReception', ordre: 1},   // Ordre de tri
     mergeVersion: 0,                    // Utilise pour flagger les changements
 
     userId: '',                         // UserId courant, permet de stocker plusieurs users localement
@@ -27,16 +37,19 @@ function pushAction(state, action) {
     state.mergeVersion++
 
     let {liste: payload, clear} = action.payload
-    if(clear === true) state.listeMessages = []  // Reset liste
+
+    if(clear === true) {
+        // Reset listes
+        state.listeMessages = []
+        state.listeDechiffrage = []
+    }
 
     let liste = state.listeMessages || []
     if( Array.isArray(payload) ) {
         const ajouts = payload.map(item=>{return {...item, '_mergeVersion': mergeVersion}})
-        // console.debug("pushAction ajouter ", ajouts)
         liste = liste.concat(ajouts)
     } else {
         const ajout = {...payload, '_mergeVersion': mergeVersion}
-        // console.debug("pushAction ajouter ", ajout)
         liste.push(ajout)
     }
 
@@ -47,12 +60,48 @@ function pushAction(state, action) {
     state.listeMessages = liste
 }
 
-function clearAction(state) {
-    state.listeMessages = null
+function pushDechiffrageAction(state, action) {
+    let {liste: payload, clear} = action.payload
+
+    if(clear === true) state.listeDechiffrage = []  // Reset liste
+
+    let liste = state.listeDechiffrage || []
+    if( Array.isArray(payload) ) {
+        liste = liste.concat(payload)
+    } else {
+        liste.push(payload)
+    }
+
+    state.listeDechiffrage = liste
 }
 
-// payload {uuid_appareil, ...data}
-function mergeAppareilAction(state, action) {
+/** @returns CleIds de tous les messages chiffres */
+function getClesMessagesChiffresAction(state) {
+    const clesSet = new Set()
+    // Dedupe les cles
+    for(const message of state.listeDechiffrage) {
+        clesSet.add(message.cle_id)
+    }
+    // Convertir set en liste
+    const cles = []
+    for(const cle of clesSet) {
+        cles.push(cle)
+    }
+    return cles
+}
+
+/** @returns Message chiffre ou null si aucun message */
+function getProchainMessageChiffreAction(state) {
+    return state.listeDechiffrage.unshift()
+}
+
+function clearAction(state) {
+    state.listeMessages = null
+    state.listeDechiffrage = null
+}
+
+// payload {message_id, ...data}
+function mergeMessageAction(state, action) {
     const mergeVersion = state.mergeVersion
     state.mergeVersion++
 
@@ -63,7 +112,7 @@ function mergeAppareilAction(state, action) {
 
     for (const payloadAppareil of payload) {
         // console.debug("mergeAppareilAction action: %O", action)
-        let { uuid_appareil } = payloadAppareil
+        let { message_id } = payloadAppareil
 
         // Ajout flag _mergeVersion pour rafraichissement ecran
         const data = {...(payloadAppareil || {})}
@@ -79,7 +128,7 @@ function mergeAppareilAction(state, action) {
         }
 
         // Trouver un fichier correspondant
-        let dataCourant = liste.filter(item=>item.uuid_appareil === uuid_appareil).pop()
+        let dataCourant = liste.filter(item=>item.message_id === message_id).pop()
 
         // Copier donnees vers state
         if(dataCourant) {
@@ -94,7 +143,7 @@ function mergeAppareilAction(state, action) {
                 retirer = true
             }
 
-            if(retirer) state.liste = liste.filter(item=>item.uuid_appareil !== uuid_appareil)
+            if(retirer) state.liste = liste.filter(item=>item.message_id !== message_id)
 
         } else if(peutAppend === true) {
             liste.push(data)
@@ -112,17 +161,38 @@ const messagesSlice = createSlice({
     reducers: {
         setUserId: setUserIdAction,
         push: pushAction, 
-        mergeAppareil: mergeAppareilAction,
+        mergeMessage: mergeMessageAction,
         clear: clearAction,
         setSortKeys: setSortKeysAction,
+        pushDechiffrage: pushDechiffrageAction,
+        getClesMessagesChiffres: getClesMessagesChiffresAction,
+        getProchainMessageChiffre: getProchainMessageChiffreAction,
     }
 })
 
 export const { 
-    setUserId, setUuidAppareil, push, mergeAppareil, clear, setSortKeys, verifierExpiration,
+    setUserId, push, mergeMessage, clear, setSortKeys, pushDechiffrage, getClesMessagesChiffres, getProchainMessageChiffre,
 } = messagesSlice.actions
 
 export default messagesSlice.reducer
+
+function creerMiddleware(workers, actions, thunks, nomSlice) {
+    // Setup du middleware
+    const dechiffrageMiddleware = createListenerMiddleware()
+
+    dechiffrageMiddleware.startListening({
+        matcher: isAnyOf(actions.pushDechiffrage),
+        effect: (action, listenerApi) => dechiffrageMiddlewareListener(workers, actions, thunks, nomSlice, action, listenerApi)
+    }) 
+    
+    return { dechiffrageMiddleware }
+}
+
+export const thunks = creerThunks(messagesSlice.actions, SLICE_NAME)
+
+export function setup(workers) {
+    return creerMiddleware(workers, messagesSlice.actions, thunks, SLICE_NAME)
+}
 
 function genererTriListe(sortKeys) {
     
@@ -135,14 +205,9 @@ function genererTriListe(sortKeys) {
         if(!b) return -1
 
         let valA = a[key], valB = b[key]
-        if(key === 'dateFichier') {
-            valA = a.dateFichier || a.derniere_modification || a.date_creation
-            valB = b.dateFichier || b.derniere_modification || b.date_creation
-        } else if(key === 'taille') {
-            const version_couranteA = a.version_courante || {},
-                  version_couranteB = b.version_courante || {}
-            valA = version_couranteA.taille || a.taille
-            valB = version_couranteB.taille || b.taille
+        if(key === 'dateReception') {
+            valA = a.date_post || a.date_traitement
+            valB = b.date_post || b.date_traitement
         }
 
         if(valA === valB) return 0

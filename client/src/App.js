@@ -70,7 +70,6 @@ function LayoutMain(props) {
 
   const { i18n, t } = useTranslation()
 
-  const dispatch = useDispatch()
   const workers = useWorkers()
   const usager = useUsager()
   const etatConnexion = useEtatConnexion()
@@ -91,11 +90,6 @@ function LayoutMain(props) {
     return [extensions.userId, extensions.delegationGlobale === 'proprietaire']
   }, [usager])
 
-  // Setup userId dans redux
-  useEffect(()=>{
-    dispatch(setUserIdMessages(userId))
-  }, [dispatch, userId])
-
   const menu = (
     <Menu
         i18n={i18n} 
@@ -106,31 +100,33 @@ function LayoutMain(props) {
   return (
       <LayoutMillegrilles menu={menu}>
 
-          <div className='top-spacer-menu'></div>
-          
-          <Container className="contenu">
+        <div className='top-spacer-menu'></div>
+        
+        <Container className="contenu">
 
-              <Suspense fallback={<Attente workers={workers} idinfoConnexionmg={infoConnexion} etatConnexion={etatAuthentifie} />}>
-                <ApplicationSenseursPassifs 
-                    workers={workers}
-                    usager={usager}
-                    etatAuthentifie={etatAuthentifie}
-                    etatConnexion={etatConnexion}
-                    infoConnexion={infoConnexion}
-                    sectionAfficher={sectionAfficher}
-                    setSectionAfficher={setSectionAfficher}
-                  />
-              </Suspense>
+            <Suspense fallback={<Attente workers={workers} idinfoConnexionmg={infoConnexion} etatConnexion={etatAuthentifie} />}>
+              <ApplicationSenseursPassifs 
+                  workers={workers}
+                  usager={usager}
+                  etatAuthentifie={etatAuthentifie}
+                  etatConnexion={etatConnexion}
+                  infoConnexion={infoConnexion}
+                  sectionAfficher={sectionAfficher}
+                  setSectionAfficher={setSectionAfficher}
+                />
+            </Suspense>
 
-          </Container>
+        </Container>
 
-          <ModalErreur show={!!erreur} err={erreur.err} message={erreur.message} titre={t('Erreur.titre')} fermer={handlerCloseErreur} />
-          <OuvertureSessionModal 
-              workers={workers}
-              etatConnexion={etatConnexion} 
-              etatConnexionOpts={etatConnexionOpts} 
-              usager={usager}
-            />
+        <ModalErreur show={!!erreur} err={erreur.err} message={erreur.message} titre={t('Erreur.titre')} fermer={handlerCloseErreur} />
+        <OuvertureSessionModal 
+            workers={workers}
+            etatConnexion={etatConnexion} 
+            etatConnexionOpts={etatConnexionOpts} 
+            usager={usager}
+          />
+
+        <ReceptionMessageListener userId={userId} />
 
       </LayoutMillegrilles>
   )  
@@ -168,4 +164,27 @@ function Attente(_props) {
           </ol>
       </div>
   )
+}
+
+function ReceptionMessageListener(props) {
+
+  const { userId } = props
+
+  const dispatch = useDispatch()
+
+  // Setup userId dans redux
+  useEffect(()=>{
+    dispatch(setUserIdMessages(userId))
+  }, [dispatch, userId])
+
+  // Charger les messages sous reception, enregistrer listeners d'evenements message
+  useEffect(()=>{
+
+    return () => {
+      // Retirer listeners messages
+
+    }
+  }, [])
+
+  return ''
 }
