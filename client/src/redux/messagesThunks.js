@@ -49,8 +49,12 @@ function creerThunks(actions, nomSlice) {
         dispatch(actions.setBucket(bucket))
         const userId = getState().messages.userId
 
-        const {dirty, chiffres} = await workers.messagesDao.getIncomplets(userId, bucket)
-        console.debug("Message dirty: %O, chiffres: %O", dirty, chiffres)
+        const {complets, dirty, chiffres} = await workers.messagesDao.getIncomplets(userId, bucket)
+        console.debug("Messages complets: %O, dirty: %O, chiffres: %O", complets, dirty, chiffres)
+
+        if(complets.length > 0) {
+            dispatch(actions.push({clear: true, liste: complets}))
+        }
 
         // Requete fichiers chiffres qui ne sont pas dirty
         if(chiffres.length > 0) {

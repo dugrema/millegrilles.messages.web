@@ -22,15 +22,15 @@ async function recupererCles(workers, listenerApi, opts) {
 
     // Recuperer les cles a dechiffrer
     let cles = getClesMessagesChiffres(listenerApi.getState().messages)
-    console.debug("Cles a recuperer ", cles)
+    // console.debug("Cles a recuperer ", cles)
     
     // Fonctionner par batch
     while(cles.length > 0) {
         const batchCles = cles.slice(0, batchSize)
         cles = cles.slice(batchSize)
 
-        const clesDechiffrees = await workers.clesDao.getCles(batchCles)
-        console.debug("Cles message dechiffres ", clesDechiffrees)
+        const _clesDechiffrees = await workers.clesDao.getCles(batchCles)
+        // console.debug("Cles message dechiffres ", _clesDechiffrees)
     }
 
 }
@@ -58,7 +58,8 @@ async function dechiffrerMessages(workers, actions, listenerApi) {
     listenerApi.dispatch(actions.clearDechiffrage())
     
     for(const infoMessage of messagesChiffres) {
-        await dechiffrerMessage(workers, infoMessage)
+        const messageUpdate = await dechiffrerMessage(workers, infoMessage)
+        listenerApi.dispatch(actions.mergeMessage(messageUpdate))
     }
 
 }
@@ -66,18 +67,20 @@ async function dechiffrerMessages(workers, actions, listenerApi) {
 async function dechiffrerMessage(workers, infoMessage) {
     const messageId = infoMessage.message_id
 
-    console.debug("Dechiffrer message %O", infoMessage)
+    // console.debug("Dechiffrer message %O", infoMessage)
     const cleDechiffrageListe = await workers.clesDao.getCles(infoMessage.cle_id)
     const cleDechiffrage = Object.values(cleDechiffrageListe).pop()
 
-    console.debug("Cle message %O", cleDechiffrage)
+    // console.debug("Cle message %O", cleDechiffrage)
     const message = await workers.messagesDao.getMessage(infoMessage.message_id)
 
-    console.debug("Cle message : %O, message : %O", cleDechiffrage, message)
+    // console.debug("Cle message : %O, message : %O", cleDechiffrage, message)
     const dataChiffre = message.message
     const messageDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsV2(
         dataChiffre, cleDechiffrage.cleSecrete, {gzip: false})
 
-    console.debug("Message dechiffre : ", messageDechiffre)
-    await workers.messagesDao.updateMessage({message_id: messageId, message: messageDechiffre, dechiffre: true})
+    // console.debug("Message dechiffre : ", messageDechiffre)
+    const messageUpdate = await workers.messagesDao.updateMessage({message_id: messageId, message: messageDechiffre, dechiffre: true})
+
+    return messageUpdate
 }

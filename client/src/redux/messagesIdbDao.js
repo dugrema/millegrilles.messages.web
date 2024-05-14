@@ -71,6 +71,8 @@ export async function updateMessage(doc, opts) {
     })
 
     await store.put(messageDoc)
+
+    return mapperMessageRow(messageDoc)
 }
 
 export async function deleteDocuments(tuuids) {
@@ -87,28 +89,58 @@ export async function getIncomplets(userId, bucket) {
 
     const store = db.transaction(STORE_MESSAGES_USAGERS, 'readonly').store
     const index = store.index('userBucket')
-    console.debug("getIncomplets Index : %O (userId: %s, bucket: %s)", index, userId, bucket)
     let curseur = await index.openCursor([userId, bucket])
-    console.debug("getIncomplets Curseur : ", curseur)
 
-    const messagesDirty = [], messagesChiffres = []
+    const messagesComplets = [], messagesDirty = [], messagesChiffres = []
     while(curseur) {
         const {message_id, dirty, dechiffre, message} = curseur.value
         if(!dechiffre && !dirty) {
             messagesChiffres.push({message_id, cle_id: message.cle_id})
         } else if(dirty) {
             messagesDirty.push(message_id)
+        } else if(dechiffre && !dirty) {
+            messagesComplets.push(mapperMessageRow(curseur.value))
         }
         curseur = await curseur.continue()
     }
 
-    return {dirty: messagesDirty, chiffres: messagesChiffres}
+    return {complets: messagesComplets, dirty: messagesDirty, chiffres: messagesChiffres}
 }
 
 export async function getMessage(messageId) {
     const db = await ouvrirDB()
     const store = db.transaction(STORE_MESSAGES_USAGERS, 'readonly').store
     return store.get(messageId)
+}
+
+export async function getMessagesParBucket(userId, bucket) {
+    const db = await ouvrirDB()
+    const store = db.transaction(STORE_MESSAGES_USAGERS, 'readonly').store
+    const index = store.index('userBucket')
+    let curseur = await index.openCursor([userId, bucket])
+    const messages = []
+    while(curseur) {
+        // Mapper message pour affichage
+        const messageMappe = mapperMessageRow(curseur.value)
+        messages.push(messageMappe)
+        curseur = await curseur.continue()
+    }
+    return messages
+}
+
+function mapperMessageRow(messageRow) {
+    const message = messageRow.message
+
+    const messageMappe = {
+        message_id: messageRow.message_id,
+        lu: !!messageRow.lu,
+        supprime: !!messageRow.supprime,
+        date_post: message.date_post,
+        date_traitement: messageRow.date_traitement,
+        derniere_modification: messageRow.derniere_modification,
+    }
+
+    return messageMappe
 }
 
 // cuuid falsy donne favoris

@@ -20,7 +20,7 @@ const initialState = {
 
     bucket: 'reception',                // Bucket (view)
 
-    sortKeys: {key: 'dateReception', ordre: 1},   // Ordre de tri
+    sortKeys: {key: 'dateReception', ordre: -1},   // Ordre de tri
     mergeVersion: 0,                    // Utilise pour flagger les changements
 
     userId: '',                         // UserId courant, permet de stocker plusieurs users localement
@@ -173,7 +173,7 @@ function mergeMessageAction(state, action) {
 
         } else if(peutAppend === true) {
             liste.push(data)
-            state.liste = liste
+            state.listeMessages = liste
         }
     }
 
