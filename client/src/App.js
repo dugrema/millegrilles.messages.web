@@ -6,10 +6,10 @@ import { Provider as ReduxProvider, useDispatch } from 'react-redux'
 import Container from 'react-bootstrap/Container'
 
 import ErrorBoundary from './ErrorBoundary'
-import useWorkers, {useEtatConnexion, useEtatConnexionOpts, WorkerProvider, useUsager, useFormatteurPret, useInfoConnexion} from './WorkerContext'
+import useWorkers, {useEtatConnexion, useEtatConnexionOpts, WorkerProvider, useUsager, useFormatteurPret, useInfoConnexion, useEtatPret} from './WorkerContext'
 import storeSetup from './redux/store'
 
-import { setUserId as setUserIdMessages } from './redux/messagesSlice'
+import { setUserId as setUserIdMessages, changerBucket, thunks as thunksMessages } from './redux/messagesSlice'
 
 import i18n from './i18n'
 
@@ -170,21 +170,31 @@ function ReceptionMessageListener(props) {
 
   const { userId } = props
 
-  const dispatch = useDispatch()
+  const workers = useWorkers(),
+        dispatch = useDispatch(),
+        etatPret = useEtatPret()
 
   // Setup userId dans redux
   useEffect(()=>{
     dispatch(setUserIdMessages(userId))
   }, [dispatch, userId])
-
-  // Charger les messages sous reception, enregistrer listeners d'evenements message
+  
+  // Enregistrer listeners d'evenements message
   useEffect(()=>{
+    if(!etatPret) return  // Rien a faire
+
+    // Ajouter listeners messages
+
+    // Demarrer sync messages
+    dispatch(changerBucket('reception'))
+    dispatch(thunksMessages.syncMessages(workers))
+      .catch(err=>console.error("ReceptionMessageListener Erreur syncMessages ", err))
 
     return () => {
       // Retirer listeners messages
 
     }
-  }, [])
+  }, [etatPret])
 
   return ''
 }

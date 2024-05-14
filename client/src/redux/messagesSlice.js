@@ -1,5 +1,6 @@
 import { createSlice, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit'
 import dechiffrageMiddlewareListener from './dechiffrageMiddleware'
+import downloadMessagesMiddlewareListener from './downloadMessagesMiddleware'
 import creerThunks from './messagesThunks'
 
 const SLICE_NAME = 'messages'
@@ -8,11 +9,16 @@ const SLICE_NAME = 'messages'
  * 
  * listeMessages : {message_id, date_post, date_traitement, lu, reply_to, sujet}
  * listeDechiffrage: {message_id, cle_id}
+ * listeDirty: message_id (str)
  * 
  */
 const initialState = {
     listeMessages: null,                // Liste triee de messages
     listeDechiffrage: [],               // Liste de messages a dechiffrer
+    listeDirty: [],                     // Liste de messages a downloader (dirty)
+    syncTime: null,
+
+    bucket: 'reception',                // Bucket (view)
 
     sortKeys: {key: 'dateReception', ordre: 1},   // Ordre de tri
     mergeVersion: 0,                    // Utilise pour flagger les changements
@@ -24,6 +30,10 @@ const initialState = {
 
 function setUserIdAction(state, action) {
     state.userId = action.payload
+    state.bucket = 'reception'
+
+    // Clear
+    clearAction(state)
 }
 
 function setSortKeysAction(state, action) {
@@ -40,8 +50,7 @@ function pushAction(state, action) {
 
     if(clear === true) {
         // Reset listes
-        state.listeMessages = []
-        state.listeDechiffrage = []
+        clearAction(state)
     }
 
     let liste = state.listeMessages || []
@@ -75,6 +84,26 @@ function pushDechiffrageAction(state, action) {
     state.listeDechiffrage = liste
 }
 
+function pushDirtyAction(state, action) {
+    let {liste: payload, syncTime, clear} = action.payload
+
+    if(clear === true) state.listeDirty = []  // Reset liste
+
+    let liste = state.listeDirty || []
+    if( Array.isArray(payload) ) {
+        liste = liste.concat(payload)
+    } else {
+        liste.push(payload)
+    }
+
+    state.listeDirty = liste
+    state.syncTime = syncTime
+}
+
+function setDirtyAction(state, action) {
+    state.listeDirty = action.payload || []
+}
+
 /** @returns CleIds de tous les messages chiffres */
 function getClesMessagesChiffresAction(state) {
     const clesSet = new Set()
@@ -97,7 +126,15 @@ function getProchainMessageChiffreAction(state) {
 
 function clearAction(state) {
     state.listeMessages = null
-    state.listeDechiffrage = null
+    state.listeDechiffrage = []
+    state.listeDirty = []
+    state.syncTime = null
+}
+
+function changerBucketAction(state, action) {
+    state.bucket = action.payload
+    // Clear
+    clearAction(state)
 }
 
 // payload {message_id, ...data}
@@ -160,32 +197,42 @@ const messagesSlice = createSlice({
     initialState,
     reducers: {
         setUserId: setUserIdAction,
+        changerBucket: changerBucketAction,
         push: pushAction, 
         mergeMessage: mergeMessageAction,
         clear: clearAction,
         setSortKeys: setSortKeysAction,
+        pushDirty: pushDirtyAction,
         pushDechiffrage: pushDechiffrageAction,
         getClesMessagesChiffres: getClesMessagesChiffresAction,
         getProchainMessageChiffre: getProchainMessageChiffreAction,
+        setDirty: setDirtyAction,
     }
 })
 
 export const { 
-    setUserId, push, mergeMessage, clear, setSortKeys, pushDechiffrage, getClesMessagesChiffres, getProchainMessageChiffre,
+    setUserId, changerBucket, push, mergeMessage, clear, setSortKeys,
+    pushDechiffrage, getClesMessagesChiffres, getProchainMessageChiffre,
+    pushDirty, setDirty,
 } = messagesSlice.actions
 
 export default messagesSlice.reducer
 
 function creerMiddleware(workers, actions, thunks, nomSlice) {
     // Setup du middleware
-    const dechiffrageMiddleware = createListenerMiddleware()
+    const downloadMessagesMiddleware = createListenerMiddleware()
+    downloadMessagesMiddleware.startListening({
+        matcher: isAnyOf(actions.pushDirty),
+        effect: (action, listenerApi) => downloadMessagesMiddlewareListener(workers, actions, thunks, nomSlice, action, listenerApi)
+    }) 
 
+    const dechiffrageMiddleware = createListenerMiddleware()
     dechiffrageMiddleware.startListening({
         matcher: isAnyOf(actions.pushDechiffrage),
         effect: (action, listenerApi) => dechiffrageMiddlewareListener(workers, actions, thunks, nomSlice, action, listenerApi)
     }) 
     
-    return { dechiffrageMiddleware }
+    return { downloadMessagesMiddleware, dechiffrageMiddleware }
 }
 
 export const thunks = creerThunks(messagesSlice.actions, SLICE_NAME)

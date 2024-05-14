@@ -10,11 +10,12 @@ function storeSetup(workers) {
 
     middleware: (getDefaultMiddleware) => {
       
-      const { dechiffrageMiddleware } = setup(workers)
+      const { downloadMessagesMiddleware, dechiffrageMiddleware } = setup(workers)
 
       // Prepend, evite le serializability check
       return getDefaultMiddleware()
         .prepend(dechiffrageMiddleware.middleware)
+        .prepend(downloadMessagesMiddleware.middleware)
 
     },
   })

@@ -1,7 +1,26 @@
-async function dechiffrageMiddlewareListener(workers, actions, thunks, nomSlice, _action, listenerApi) {
-    console.debug("dechiffrageMiddlewareListener running effect, action : %O", _action)
+async function downloadMessagesMiddlewareListener(workers, actions, thunks, nomSlice, _action, listenerApi) {
+    console.debug("downloadMessagesMiddlewareListener running effect, action : %O", _action)
     await listenerApi.unsubscribe()
     try {
+        const batchSize = 5
+        while(true) {
+            // Download messages en batch
+            const listeDirty =  listenerApi.getState().messages.listeDirty
+            const batchDirty = listeDirty.slice(0, batchSize)
+            listenerApi.dispatch(actions.setDirty(listeDirty.slice(batchSize)))
+            
+            if(batchDirty.length === 0) break
+            
+            // Downloader messages
+            console.debug("downloadMessagesMiddlewareListener Batch : ", batchDirty)
+            const reponse = await workers.connexion.getMessagesParIds(batchDirty)
+            console.debug("downloadMessagesMiddlewareListener Reponse messages : ", reponse)
+
+            for(const message of reponse.messages) {
+                await workers.messagesDao.updateMessage(message, {dirty: false})
+            }
+        }
+
         // let etapeChargement = listenerApi.getState()[nomSlice].etapeChargement
         
         // if(etapeChargement === CONST_ETAPE_CHARGEMENT_LISTE) {
@@ -61,12 +80,12 @@ async function dechiffrageMiddlewareListener(workers, actions, thunks, nomSlice,
         //     listenerApi.dispatch(actions.remplacerFichiers(fichiersDechiffres))
         // }
     } catch(err) {
-        console.error("dechiffrageMiddlewareListener Erreur chargement ", err)
+        console.error("downloadMessagesMiddlewareListener Erreur chargement ", err)
         // listenerApi.dispatch(actions.setEtapeChargement(CONST_ETAPE_CHARGEMENT_ERREUR))
     } finally {
         await listenerApi.subscribe()
     }
 }
 
-export default dechiffrageMiddlewareListener
+export default downloadMessagesMiddlewareListener
 
