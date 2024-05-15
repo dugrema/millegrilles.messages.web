@@ -52,16 +52,18 @@ function getClesMessagesChiffres(state) {
 }
 
 async function dechiffrerMessages(workers, actions, listenerApi) {
-
     // Recuperer messages a dechiffrer, vider liste.
-    const messagesChiffres = listenerApi.getState().messages.listeDechiffrage
-    listenerApi.dispatch(actions.clearDechiffrage())
-    
-    for(const infoMessage of messagesChiffres) {
+    // Charger la liste (getState) a chaque message. Permet de dechiffrer de nouveau messages recus 
+    // durant le processus ou d'arreter le dechiffrage au changement de bucket.
+    while(listenerApi.getState().messages.listeDechiffrage.length > 0) {
+        let messagesChiffres = listenerApi.getState().messages.listeDechiffrage
+        const infoMessage = messagesChiffres[0]
+        messagesChiffres = messagesChiffres.slice(1)  // Retirer premier message
+        listenerApi.dispatch(actions.setDechiffrage(messagesChiffres))
+        
         const messageUpdate = await dechiffrerMessage(workers, infoMessage)
         listenerApi.dispatch(actions.mergeMessage(messageUpdate))
     }
-
 }
 
 async function dechiffrerMessage(workers, infoMessage) {

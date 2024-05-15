@@ -28,7 +28,6 @@ async function downloadMessagesMiddlewareListener(workers, actions, thunks, nomS
         }
     } catch(err) {
         console.error("downloadMessagesMiddlewareListener Erreur chargement ", err)
-        // listenerApi.dispatch(actions.setEtapeChargement(CONST_ETAPE_CHARGEMENT_ERREUR))
     } finally {
         await listenerApi.subscribe()
     }

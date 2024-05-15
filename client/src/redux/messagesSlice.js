@@ -88,6 +88,10 @@ function clearDechiffrageAction(state) {
     state.listeDechiffrage = []
 }
 
+function setDechiffrageAction(state, action) {
+    state.listeDechiffrage = action.payload
+}
+
 function pushDirtyAction(state, action) {
     let {liste: payload, syncTime, clear} = action.payload
 
@@ -196,6 +200,7 @@ const messagesSlice = createSlice({
         getProchainMessageChiffre: getProchainMessageChiffreAction,
         setDirty: setDirtyAction,
         clearDechiffrage: clearDechiffrageAction,
+        setDechiffrage: setDechiffrageAction,
     }
 })
 
