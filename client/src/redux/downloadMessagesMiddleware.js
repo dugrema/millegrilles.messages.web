@@ -1,5 +1,5 @@
 async function downloadMessagesMiddlewareListener(workers, actions, thunks, nomSlice, _action, listenerApi) {
-    console.debug("downloadMessagesMiddlewareListener running effect, action : %O", _action)
+    // console.debug("downloadMessagesMiddlewareListener running effect, action : %O", _action)
     await listenerApi.unsubscribe()
     try {
         const batchSize = 5
@@ -12,9 +12,9 @@ async function downloadMessagesMiddlewareListener(workers, actions, thunks, nomS
             if(batchDirty.length === 0) break
             
             // Downloader messages
-            console.debug("downloadMessagesMiddlewareListener Batch : ", batchDirty)
+            // console.debug("downloadMessagesMiddlewareListener Batch : ", batchDirty)
             const reponse = await workers.connexion.getMessagesParIds(batchDirty)
-            console.debug("downloadMessagesMiddlewareListener Reponse messages : ", reponse)
+            // console.debug("downloadMessagesMiddlewareListener Reponse messages : ", reponse)
 
             for(const message of reponse.messages) {
                 await workers.messagesDao.updateMessage(message, {dirty: false})

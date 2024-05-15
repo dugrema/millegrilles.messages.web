@@ -19,7 +19,7 @@ function creerThunks(actions, nomSlice) {
 
         while(true) {
             const reponse = await workers.connexion.syncMessages(bucket, skip, limit)
-            console.debug("Sync messages reponse : ", reponse)
+            // console.debug("Sync messages reponse : ", reponse)
 
             const messages = reponse.messages || []
             
@@ -50,7 +50,7 @@ function creerThunks(actions, nomSlice) {
         const userId = getState().messages.userId
 
         const {complets, dirty, chiffres} = await workers.messagesDao.getIncomplets(userId, bucket)
-        console.debug("Messages complets: %O, dirty: %O, chiffres: %O", complets, dirty, chiffres)
+        // console.debug("Messages complets: %O, dirty: %O, chiffres: %O", complets, dirty, chiffres)
 
         if(complets.length > 0) {
             dispatch(actions.push({clear: true, liste: complets}))

@@ -1,5 +1,5 @@
 async function dechiffrageMiddlewareListener(workers, actions, thunks, nomSlice, _action, listenerApi) {
-    console.debug("dechiffrageMiddlewareListener running effect, action : %O", _action)
+    // console.debug("dechiffrageMiddlewareListener running effect, action : %O", _action)
     await listenerApi.unsubscribe()
 
     const batchSize = 100
@@ -24,12 +24,12 @@ async function recupererCles(workers, listenerApi, opts) {
     let cles = getClesMessagesChiffres(listenerApi.getState().messages)
     // console.debug("Cles a recuperer ", cles)
     
-    // Fonctionner par batch
+    // Fonctionner par batch, pre-charger les cles dans IDB (local)
     while(cles.length > 0) {
         const batchCles = cles.slice(0, batchSize)
         cles = cles.slice(batchSize)
 
-        const _clesDechiffrees = await workers.clesDao.getCles(batchCles)
+        await workers.clesDao.getCles(batchCles)
         // console.debug("Cles message dechiffres ", _clesDechiffrees)
     }
 

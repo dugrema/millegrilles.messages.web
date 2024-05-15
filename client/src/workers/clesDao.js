@@ -28,7 +28,7 @@ function build(workers) {
 export default build
 
 async function getCles(workers, cle_ids, opts) {
-    console.debug("getCles liste_hachage_bytes %s", cle_ids)
+    // console.debug("getCles liste_hachage_bytes %s", cle_ids)
     opts = opts || {}
 
     if(typeof(cle_ids) === 'string') cle_ids = [cle_ids]
@@ -48,11 +48,11 @@ async function getCles(workers, cle_ids, opts) {
         }
     }
 
-    console.debug("Cles connues : %d, cles manquantes : %d", Object.keys(clesDechiffrees).length, clesManquantes.length)
+    // console.debug("Cles connues : %d, cles manquantes : %d", Object.keys(clesDechiffrees).length, clesManquantes.length)
     if(clesManquantes.length > 0) {
         // Recuperer les cles du serveur
         const reponseClesChiffrees = await connexion.dechiffrerCles(cle_ids)
-        console.debug("getCles reponseClesChiffrees ", reponseClesChiffrees)
+        // console.debug("getCles reponseClesChiffrees ", reponseClesChiffrees)
 
         // Nouvelle methode avec reponse chiffree (V2)
         if(!reponseClesChiffrees.ok) {

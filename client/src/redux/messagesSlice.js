@@ -64,7 +64,7 @@ function pushAction(state, action) {
 
     // Trier
     liste.sort(genererTriListe(state.sortKeys))
-    console.debug("pushAction liste triee : %O", liste)
+    // console.debug("pushAction liste triee : %O", liste)
 
     state.listeMessages = liste
 }
