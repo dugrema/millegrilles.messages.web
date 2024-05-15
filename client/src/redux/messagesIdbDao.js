@@ -64,6 +64,8 @@ export async function updateMessage(doc, opts) {
     const messageDoc = (await store.get(message_id)) || {}
     Object.assign(messageDoc, doc)
 
+    if(!messageDoc.user_id) throw new Error('updateDocument user_id doit etre deja present dans IDB ou fourni')
+
     // Changer flags
     flags.forEach(flag=>{
         const val = opts[flag]

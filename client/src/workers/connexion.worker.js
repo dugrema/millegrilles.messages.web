@@ -28,13 +28,13 @@ function dechiffrerCles(cleIds) {
 
 // Evenements
 
-// async function ecouterEvenementsAppareilsUsager(cb) {
-//   return connexionClient.subscribe('ecouterEvenementsAppareilsUsager', cb, {}) 
-// }
+async function ecouterEvenementsMessagesUsager(cb) {
+  return connexionClient.subscribe('ecouterEvenementsMessagesUsager', cb, {}) 
+}
 
-// async function retirerEvenementsAppareilsUsager(cb) {
-//   return connexionClient.unsubscribe('retirerEvenementsAppareilsUsager', cb, {}) 
-// }
+async function retirerEvenementsMessagesUsager(cb) {
+  return connexionClient.unsubscribe('retirerEvenementsMessagesUsager', cb, {}) 
+}
 
 // Exposer methodes du Worker
 expose({
@@ -45,6 +45,6 @@ expose({
     syncMessages, getMessagesParIds, dechiffrerCles,
 
     // Event listeners proteges
-    //ecouterEvenementsAppareilsUsager, retirerEvenementsAppareilsUsager,
+    ecouterEvenementsMessagesUsager, retirerEvenementsMessagesUsager,
 
 })

@@ -1,4 +1,5 @@
-import React, {Suspense, useState, useEffect, useMemo} from 'react'
+import React, {Suspense, useState, useEffect, useMemo, useCallback} from 'react'
+import { proxy as comlinkProxy } from 'comlink'
 import { useTranslation } from 'react-i18next'
 
 import { Provider as ReduxProvider, useDispatch } from 'react-redux'
@@ -9,7 +10,7 @@ import ErrorBoundary from './ErrorBoundary'
 import useWorkers, {useEtatConnexion, useEtatConnexionOpts, WorkerProvider, useUsager, useFormatteurPret, useInfoConnexion, useEtatPret} from './WorkerContext'
 import storeSetup from './redux/store'
 
-import { setUserId as setUserIdMessages, thunks as thunksMessages } from './redux/messagesSlice'
+import { setUserId as setUserIdMessages, pushDirty, thunks as thunksMessages } from './redux/messagesSlice'
 
 import i18n from './i18n'
 
@@ -179,11 +180,19 @@ function ReceptionMessageListener(props) {
     dispatch(setUserIdMessages(userId))
   }, [dispatch, userId])
   
+
+  const messageUsagerHandler = useMemo(
+    () => comlinkProxy( evenement => traiterMessageEvenement(workers, dispatch, evenement) ),
+    [workers, dispatch]
+)  
+
   // Enregistrer listeners d'evenements message
   useEffect(()=>{
     if(!etatPret) return  // Rien a faire
 
     // Ajouter listeners messages
+    workers.connexion.ecouterEvenementsMessagesUsager(messageUsagerHandler)
+      .catch(err=>console.error("Erreur ajout listener messages usager : %O", err))
 
     // Demarrer sync messages
     dispatch(thunksMessages.changerBucket(workers, 'reception'))
@@ -191,9 +200,41 @@ function ReceptionMessageListener(props) {
 
     return () => {
       // Retirer listeners messages
-
+      workers.connexion.retirerEvenementsMessagesUsager(messageUsagerHandler)
+        .catch(err=>console.info("Erreur retrait listener messages usager : %O", err))
     }
-  }, [etatPret])
+  }, [workers, etatPret, messageUsagerHandler])
 
   return ''
+}
+
+async function traiterMessageEvenement(workers, dispatch, evenement) {
+  console.debug("Evenement sur message recu : %O", evenement)
+  const action = evenement.routingKey.split(".").pop()
+  if(action === 'nouveauMessage') {
+    await traiterEvenementNouveauMessage(workers, dispatch, evenement)
+  } else {
+    console.debug("traiterMessageEvenement Evenement non supporte ", evenement)
+    throw new Error(`traiterMessageEvenement Action non supportee : ${action}`)
+  }
+}
+
+async function traiterEvenementNouveauMessage(workers, dispatch, evenement) {
+  const message = evenement.message
+  console.debug("traiterEvenementNouveauMessage ", evenement)
+  const nouveauMessage = {
+    message_id: message.message_id,
+    user_id: message.user_id,
+    derniere_modification: 0,
+    supprime: false,
+    dirty: true,
+    dechiffre: false,
+    lu: false,
+    bucket: 'reception',
+    syncTime: evenement.message['__original'].estampille,
+    message: {}
+  }
+  await workers.messagesDao.updateMessage(nouveauMessage)
+
+  dispatch(pushDirty({liste: [message.message_id]}))
 }

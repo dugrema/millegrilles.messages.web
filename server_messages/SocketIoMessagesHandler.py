@@ -22,8 +22,8 @@ class SocketIoMessagesHandler(SocketIoHandler):
         self._sio.on('dechiffrerCles', handler=self.requete_dechiffrer_cles)
         # self._sio.on('majConfigurationUsager', handler=self.maj_configuration_usager)
 
-        # self._sio.on('ecouterEvenementsAppareilsUsager', handler=self.ecouter_appareils_usager)
-        # self._sio.on('retirerEvenementsAppareilsUsager', handler=self.retirer_appareils_usager)
+        self._sio.on('ecouterEvenementsMessagesUsager', handler=self.ecouter_messages_usager)
+        self._sio.on('retirerEvenementsMessagesUsager', handler=self.retirer_messages_usager)
 
     @property
     def exchange_default(self):
@@ -47,49 +47,46 @@ class SocketIoMessagesHandler(SocketIoHandler):
 
     # Listeners
 
-    # async def ecouter_appareils_usager(self, sid: str, message: dict):
-    #     # "ecouterEvenementsActivationFingerprint"
-    #
-    #     async with self._sio.session(sid) as session:
-    #         try:
-    #             enveloppe = await self.authentifier_message(session, message)
-    #             user_id = enveloppe.get_user_id
-    #         except ErreurAuthentificationMessage as e:
-    #             return self.etat.formatteur_message.signer_message(
-    #                 Constantes.KIND_REPONSE, {'ok': False, 'err': str(e)})[0]
-    #
-    #     exchanges = [Constantes.SECURITE_PRIVE]
-    #     routing_keys = [
-    #         f'evenement.SenseursPassifs.{user_id}.lectureConfirmee',
-    #         f'evenement.SenseursPassifs.{user_id}.majAppareil',
-    #         f'evenement.SenseursPassifs.{user_id}.presenceAppareil',
-    #     ]
-    #
-    #     reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
-    #     reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
-    #
-    #     return reponse_signee
-    #
-    # async def retirer_appareils_usager(self, sid: str, message: dict):
-    #     # "retirerEvenementsActivationFingerprint"
-    #     # Note : message non authentifie (sans signature)
-    #
-    #     async with self._sio.session(sid) as session:
-    #         try:
-    #             enveloppe = await self.authentifier_message(session, message)
-    #             user_id = enveloppe.get_user_id
-    #         except (CertificatInconnu, ErreurAuthentificationMessage) as e:
-    #             return self.etat.formatteur_message.signer_message(
-    #                 Constantes.KIND_REPONSE, {'ok': False, 'err': str(e)})[0]
-    #
-    #     exchanges = [Constantes.SECURITE_PRIVE]
-    #     routing_keys = [
-    #         f'evenement.SenseursPassifs.{user_id}.lectureConfirmee',
-    #         f'evenement.SenseursPassifs.{user_id}.majAppareil',
-    #         f'evenement.SenseursPassifs.{user_id}.presenceAppareil',
-    #     ]
-    #
-    #     reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
-    #     reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
-    #
-    #     return reponse_signee
+    async def ecouter_messages_usager(self, sid: str, message: dict):
+        # "ecouterEvenementsMessagesUsager"
+        async with self._sio.session(sid) as session:
+            try:
+                enveloppe = await self.authentifier_message(session, message)
+                user_id = enveloppe.get_user_id
+            except ErreurAuthentificationMessage as e:
+                return self.etat.formatteur_message.signer_message(
+                    Constantes.KIND_REPONSE, {'ok': False, 'err': str(e)})[0]
+
+        exchanges = [Constantes.SECURITE_PRIVE]
+        routing_keys = [
+            f'evenement.Messages.{user_id}.nouveauMessage',
+            f'evenement.Messages.{user_id}.messageLu',
+            f'evenement.Messages.{user_id}.messageSupprime',
+        ]
+
+        reponse = await self.subscribe(sid, message, routing_keys, exchanges, enveloppe=enveloppe)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+
+        return reponse_signee
+
+    async def retirer_messages_usager(self, sid: str, message: dict):
+        # "retirerEvenementsMessagesUsager"
+        async with self._sio.session(sid) as session:
+            try:
+                enveloppe = await self.authentifier_message(session, message)
+                user_id = enveloppe.get_user_id
+            except (CertificatInconnu, ErreurAuthentificationMessage) as e:
+                return self.etat.formatteur_message.signer_message(
+                    Constantes.KIND_REPONSE, {'ok': False, 'err': str(e)})[0]
+
+        exchanges = [Constantes.SECURITE_PRIVE]
+        routing_keys = [
+            f'evenement.Messages.{user_id}.nouveauMessage',
+            f'evenement.Messages.{user_id}.messageLu',
+            f'evenement.Messages.{user_id}.messageSupprime',
+        ]
+
+        reponse = await self.unsubscribe(sid, message, routing_keys, exchanges)
+        reponse_signee, correlation_id = self.etat.formatteur_message.signer_message(Constantes.KIND_REPONSE, reponse)
+
+        return reponse_signee
