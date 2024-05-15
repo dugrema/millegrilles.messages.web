@@ -2,7 +2,7 @@ async function downloadMessagesMiddlewareListener(workers, actions, thunks, nomS
     // console.debug("downloadMessagesMiddlewareListener running effect, action : %O", _action)
     await listenerApi.unsubscribe()
     try {
-        const batchSize = 5
+        const batchSize = 20
         while(true) {
             // Download messages en batch
             const listeDirty =  listenerApi.getState().messages.listeDirty

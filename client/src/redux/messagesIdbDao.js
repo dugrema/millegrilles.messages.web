@@ -140,6 +140,7 @@ function mapperMessageRow(messageRow) {
         date_post: message.date_post,
         date_traitement: messageRow.date_traitement,
         derniere_modification: messageRow.derniere_modification,
+        sujet: message.sujet,
     }
 
     return messageMappe

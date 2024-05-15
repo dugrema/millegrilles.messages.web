@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo} from 'react'
+import {lazy, useState, useEffect, useMemo} from 'react'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 
@@ -7,35 +7,35 @@ import { useDispatch, useSelector } from 'react-redux'
 import useWorkers from './WorkerContext'
 // import {  } from './redux/messagesSlice'
 
+import ListeMessages from './ListeMessages'
+const AfficherMessage = lazy( () => import('./AfficherMessage') )
 
 function Reception(props) {
+
+    const [messageSelectionne, setMessageSelectionne] = useState('')
+
     return (
-        <div>
-            <p>Reception</p>
-            <ListeMessages />
-        </div>
+        <ReceptionLayout2Colonnes 
+            messageSelectionne={messageSelectionne}
+            setMessageSelectionne={setMessageSelectionne}
+        />
     )
 }
 
 export default Reception
 
-function ListeMessages(props) {
-    const messages = useSelector(item=>item.messages.listeMessages)
-
-    const messagesMappes = useMemo(()=>{
-        if(!messages || messages.length === 0) return []
-
-        const messagesMappes = messages.map(item=>{
-            return <Row key={item.message_id}><Col>Message {item.date_post}</Col></Row>
-        })
-        
-        return messagesMappes
-    }, [messages])
+function ReceptionLayout2Colonnes(props) {
+    const {messageSelectionne, setMessageSelectionne} = props
 
     return (
-        <div>
-            Messages
-            {messagesMappes}
-        </div>
+        <Row>
+            <Col md={5} lg={4} xl={3}>
+                <p>Reception</p>
+                <ListeMessages onChange={setMessageSelectionne} value={messageSelectionne} />
+            </Col>
+            <Col className="d-none d-md-block">
+                <AfficherMessage value={messageSelectionne} />
+            </Col>
+        </Row>
     )
 }

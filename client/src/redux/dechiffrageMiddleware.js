@@ -80,9 +80,36 @@ async function dechiffrerMessage(workers, infoMessage) {
     const dataChiffre = message.message
     const messageDechiffre = await workers.chiffrage.chiffrage.dechiffrerChampsV2(
         dataChiffre, cleDechiffrage.cleSecrete, {gzip: false})
+    console.debug("Message dechiffre : ", messageDechiffre)
 
-    // console.debug("Message dechiffre : ", messageDechiffre)
-    const messageUpdate = await workers.messagesDao.updateMessage({message_id: messageId, message: messageDechiffre, dechiffre: true})
+    // Tenter de generer un sujet
+    const {sujet} = extraireSujet(messageDechiffre.contenu)
+    if(sujet) {
+        console.debug("Sujet : ", sujet)
+        messageDechiffre.sujet = sujet
+    }
+
+    const nouveauContenu = {message_id: messageId, message: messageDechiffre, dechiffre: true}
+    const messageUpdate = await workers.messagesDao.updateMessage(nouveauContenu)
 
     return messageUpdate
+}
+
+const REGEX_SUBJECT = /^<p>([^<]+)<\/p><p><br><\/p>(.*)/i
+
+function extraireSujet(contenu) {
+    // Extraire premiere ligne pour faire le sujet
+    let sujet = ''
+    try {
+        const matchSubject = REGEX_SUBJECT.exec(contenu)
+        console.debug("Match sujet %O, contenu:\n%s", matchSubject, contenu)
+        if(matchSubject && matchSubject.length === 3) {
+            sujet = matchSubject[1]
+            contenu = matchSubject[2]
+        }
+        
+    } catch(err) {
+        console.error("Erreur preparation sujet : %O", err)
+    }
+    return {sujet, contenu}
 }
