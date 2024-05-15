@@ -53,12 +53,25 @@ function EnteteMessage(props) {
 
     const COL_LABEL = {sm: 4, md: 3}
 
+    const [auteur, replyTo] = useMemo(()=>{
+        if(!value || !value.message) return [null, null]
+        const replyTo = value.message.reply_to
+        let auteur = value.message.auteur || replyTo
+        return [auteur, replyTo]
+    }, [value])
+
     return (
         <div>
             <Row>
                 <Col {...COL_LABEL}>Date</Col>
                 <Col><FormatterDate value={value.message.date_post}/></Col>
             </Row>
+            {auteur?
+                <Row>
+                    <Col {...COL_LABEL}>Auteur</Col>
+                    <Col>{auteur}</Col>
+                </Row>
+            :''}
             <Row>
                 <Col {...COL_LABEL}>Destinataires</Col>
                 <Col><Destinataires value={value.message.destinataires}/></Col>

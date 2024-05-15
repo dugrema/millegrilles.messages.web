@@ -24,14 +24,14 @@ function ListeMessages(props) {
         if(!messages || messages.length === 0) return []
 
         const messagesMappes = messages.map(item=>{
-            return <MessageRow key={item.message_id} value={item} onClick={onClick} />
+            return <MessageRow key={item.message_id} value={item} onClick={onClick} selectionne={item.message_id === value} />
         })
         
         return messagesMappes
-    }, [messages])
+    }, [messages, value])
 
     return (
-        <div>
+        <div className="messageliste">
             {messagesMappes}
         </div>
     )
@@ -40,19 +40,32 @@ function ListeMessages(props) {
 export default ListeMessages
 
 function MessageRow(props) {
-    const {onClick, value} = props
+    const {onClick, value, selectionne} = props
+
+    const classNameDiv = useMemo(()=>{
+        let classes = []
+        if(value.lu) classes.push('lu')
+        if(selectionne) classes.push('selectionne')
+        return classes.join(' ')
+    }, [value, selectionne])
 
     return (
-        <div onClick={onClick} data-id={value.message_id}>
+        <div onClick={onClick} data-id={value.message_id} className={classNameDiv}>
             <Row>
                 <Col>
-                    <FormatterDate value={value.date_post} />
+                    <FormatterDate value={value.date_post||value.date_traitement} />
                 </Col>
             </Row>
-            <Row>
-                <Col>{value.sujet}</Col>
-            </Row>
-            <hr/>
+            {value.auteur?
+                <Row className="auteur">
+                    <Col>{value.auteur}</Col>
+                </Row>
+            :''}
+            {value.sujet?
+                <Row className="sujet">
+                    <Col>{value.sujet}</Col>
+                </Row>
+            :''}
         </div>
     )
 }

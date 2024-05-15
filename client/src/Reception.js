@@ -30,7 +30,7 @@ function ReceptionLayout2Colonnes(props) {
     return (
         <Row>
             <Col md={5} lg={4} xl={3}>
-                <p>Reception</p>
+                <p>Messages reçus</p>
                 <ListeMessages onChange={setMessageSelectionne} value={messageSelectionne} />
             </Col>
             <Col className="d-none d-md-block">

@@ -1,7 +1,7 @@
 {
-    "titre": "Sensors",
+    "titre": "Messages",
     "application": {
-        "nom": "Sensors and switches"
+        "nom": "Messages"
     },
     "menu": {
         "reception": "Reception",
