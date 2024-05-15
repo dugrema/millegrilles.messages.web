@@ -31,13 +31,37 @@ function ListeMessages(props) {
     }, [messages, value])
 
     return (
-        <div className="messageliste">
-            {messagesMappes}
+        <div>
+            <StatsMessages />
+            <div className="messageliste">
+                {messagesMappes}
+            </div>
         </div>
     )
 }
 
 export default ListeMessages
+
+function StatsMessages(props) {
+    const listeMessages = useSelector(item=>item.messages.listeMessages)
+
+    const stats = useMemo(()=>{
+        if(!listeMessages) return {total: 0, nonLus: 0}
+        return listeMessages.reduce((acc, item)=>{
+            if(!item.lu) acc.nonLus++
+            acc.total++
+            return acc
+        }, {total: 0, nonLus: 0})
+    }, [listeMessages])
+
+    return (
+        <Row>
+            <Col>
+                Nombre : {stats.total} (non lus: {stats.nonLus})
+            </Col>
+        </Row>
+    )
+}
 
 function MessageRow(props) {
     const {onClick, value, selectionne} = props

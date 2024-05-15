@@ -2,6 +2,7 @@ import {useState, useEffect, useMemo} from 'react'
 import ReactQuill from 'react-quill'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
+import Button from 'react-bootstrap/Button'
 
 import { FormatterDate } from '@dugrema/millegrilles.reactjs'
 
@@ -76,7 +77,22 @@ function EnteteMessage(props) {
                 <Col {...COL_LABEL}>Destinataires</Col>
                 <Col><Destinataires value={value.message.destinataires}/></Col>
             </Row>
+            <BoutonsMessage replyTo={replyTo} />
         </div>
+    )
+}
+
+function BoutonsMessage(props) {
+    const {replyTo} = props
+    
+    return (
+        <Row className="buttonbar">
+            <Col>
+                <Button variant="secondary" disabled={!replyTo} title='repondre'><i className="fa fa-reply"/></Button>
+                <Button variant="secondary" title='transferer'><i className="fa fa-mail-forward"/></Button>
+                <Button variant="danger" title='supprimer'><i className="fa fa-trash"/></Button>
+            </Col>
+        </Row>
     )
 }
 
@@ -85,13 +101,7 @@ function Destinataires(props) {
 
     const destinataires = useMemo(()=>{
         if(!value || value.length === 0) return []
-        const mapping = value.map((item, idx)=>{
-            let sep = <span>, </span>
-            if(idx === 0) sep = ''
-            return (
-                <span key={idx}>{item}{sep}</span>
-            )
-        })
+        const mapping = value.join(', ')
         return mapping
     }, [value])
 
