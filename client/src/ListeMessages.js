@@ -87,7 +87,7 @@ function MessageRow(props) {
             :''}
             {value.sujet?
                 <Row className="sujet">
-                    <Col>{value.sujet}</Col>
+                    <Col>{value.sujet.slice(0, 100)}</Col>
                 </Row>
             :''}
         </div>

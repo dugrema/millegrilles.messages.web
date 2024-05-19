@@ -76,6 +76,8 @@ div.table div.table-header {
 .messageliste > DIV {
   border-top: 1px solid gray;
   border-right: 1px solid gray;
+  height: 4.3rem;
+  overflow: hidden;
 }
 
 .messageliste .lu {
