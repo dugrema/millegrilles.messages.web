@@ -35,7 +35,14 @@ function creerThunks(actions, nomSlice) {
         }
 
         // Todo : Cleanup messages qui n'ont pas ete vus (syncTime vieux)
-
+        try {
+            const supprimes = await workers.messagesDao.supprimerOutOfSync(userId, bucket, syncTime)
+            if(supprimes.length > 0) {
+                dispatch(actions.retirerMessages(supprimes))
+            }
+        } catch(err) {
+            console.warn("Erreur nettoyage messages supprimes : ", err)
+        }
     }
 
     /** Change le bucket, redemarre le traitement des fichiers dirty ou chiffre a partir de IDB pour un bucket */

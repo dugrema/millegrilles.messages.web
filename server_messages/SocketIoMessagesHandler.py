@@ -20,7 +20,8 @@ class SocketIoMessagesHandler(SocketIoHandler):
         self._sio.on('syncMessages', handler=self.requete_sync_messages)
         self._sio.on('getMessagesParIds', handler=self.requete_messages_par_ids)
         self._sio.on('dechiffrerCles', handler=self.requete_dechiffrer_cles)
-        # self._sio.on('majConfigurationUsager', handler=self.maj_configuration_usager)
+        self._sio.on('marquerLu', handler=self.marquer_lu)
+        self._sio.on('supprimerMessage', handler=self.supprimer_message)
 
         self._sio.on('ecouterEvenementsMessagesUsager', handler=self.ecouter_messages_usager)
         self._sio.on('retirerEvenementsMessagesUsager', handler=self.retirer_messages_usager)
@@ -41,9 +42,13 @@ class SocketIoMessagesHandler(SocketIoHandler):
         return await self.executer_requete(sid, message,
                                            ConstantesMessages.NOM_DOMAINE, 'dechiffrerCles')
 
-    async def maj_configuration_usager(self, sid: str, message: dict):
+    async def marquer_lu(self, sid: str, message: dict):
         return await self.executer_commande(sid, message,
-                                            ConstantesMessages.NOM_DOMAINE, 'majConfigurationUsager')
+                                            ConstantesMessages.NOM_DOMAINE, 'marquerLu')
+
+    async def supprimer_message(self, sid: str, message: dict):
+        return await self.executer_commande(sid, message,
+                                            ConstantesMessages.NOM_DOMAINE, 'supprimerMessage')
 
     # Listeners
 

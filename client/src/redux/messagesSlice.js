@@ -185,6 +185,12 @@ function mergeMessageAction(state, action) {
     state.listeMessages.sort(genererTriListe(state.sortKeys))
 }
 
+function retirerMessagesAction(state, action) {
+    const supprimer = action.payload
+    const listeFiltree = state.listeMessages.filter(item=>!supprimer.includes(item.message_id))
+    state.listeMessages = listeFiltree
+}
+
 const messagesSlice = createSlice({
     name: SLICE_NAME,
     initialState,
@@ -201,6 +207,7 @@ const messagesSlice = createSlice({
         setDirty: setDirtyAction,
         clearDechiffrage: clearDechiffrageAction,
         setDechiffrage: setDechiffrageAction,
+        retirerMessages: retirerMessagesAction,
     }
 })
 

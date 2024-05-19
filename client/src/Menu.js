@@ -69,12 +69,10 @@ function Menu(props) {
                 onSelect={handlerSelect} 
                 i18nInstance={i18n}>
   
-              {estProprietaire?
-                <Nav.Link eventKey="reception" title="Reception">
-                  {t('menu.reception')}
-                </Nav.Link>
-              :''}
-  
+              <Nav.Link eventKey="reception" title="Reception">
+                {t('menu.reception')}
+              </Nav.Link>
+
               <Nav.Link eventKey="information" title="Afficher l'information systeme">
                   {t('menu.information')}
               </Nav.Link>

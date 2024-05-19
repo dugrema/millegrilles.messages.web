@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo} from 'react'
+import {useState, useEffect, useMemo, useCallback} from 'react'
 import ReactQuill from 'react-quill'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -15,6 +15,11 @@ function AfficherMessage(props) {
 
     const [message, setMessage] = useState('')
 
+    const supprimerMessageHandler = useCallback(()=>{
+        workers.connexion.supprimerMessage(message.message_id)
+            .catch(err=>console.error("Erreur supprimer message : ", err))
+    }, [workers, message])
+
     useEffect(()=>{
         if(value) {
             // Charger le message
@@ -22,6 +27,12 @@ function AfficherMessage(props) {
                 .then(messageIdb=>{
                     console.debug("Message charge : ", messageIdb)
                     setMessage(messageIdb)
+
+                    if(messageIdb.lu !== true) {
+                        // Marquer message comme lu
+                        workers.connexion.marquerLu(value)
+                            .catch(err=>console.warn("Erreur marquer message %s lu : %O", value, err))
+                    }
                 })
                 .catch(err=>console.error("Erreur chargement message %s : %O", value, err))
         } else {
@@ -30,7 +41,7 @@ function AfficherMessage(props) {
     }, [workers, value, setMessage])
 
     if(message) {
-        return <Message value={message} />
+        return <Message value={message} onSupprimerMessage={supprimerMessageHandler} />
     }
 
     return 'Aucun message selectionne'
@@ -39,18 +50,18 @@ function AfficherMessage(props) {
 export default AfficherMessage
 
 function Message(props) {
-    const {value} = props
+    const {value, onSupprimerMessage} = props
 
     return (
         <div>
-            <EnteteMessage value={value} />
+            <EnteteMessage value={value} onSupprimerMessage={onSupprimerMessage} />
             <ContenuMessage value={value} />
         </div>
     )
 }
 
 function EnteteMessage(props) {
-    const {value} = props
+    const {value, onSupprimerMessage} = props
 
     const COL_LABEL = {sm: 4, md: 3}
 
@@ -77,20 +88,20 @@ function EnteteMessage(props) {
                 <Col {...COL_LABEL}>Destinataires</Col>
                 <Col><Destinataires value={value.message.destinataires}/></Col>
             </Row>
-            <BoutonsMessage replyTo={replyTo} />
+            <BoutonsMessage replyTo={replyTo} onSupprimerMessage={onSupprimerMessage} />
         </div>
     )
 }
 
 function BoutonsMessage(props) {
-    const {replyTo} = props
+    const {replyTo, onSupprimerMessage} = props
     
     return (
         <Row className="buttonbar">
             <Col>
                 <Button variant="secondary" disabled={!replyTo} title='repondre'><i className="fa fa-reply"/></Button>
                 <Button variant="secondary" title='transferer'><i className="fa fa-mail-forward"/></Button>
-                <Button variant="danger" title='supprimer'><i className="fa fa-trash"/></Button>
+                <Button variant="danger" title='supprimer' onClick={onSupprimerMessage}><i className="fa fa-trash"/></Button>
             </Col>
         </Row>
     )

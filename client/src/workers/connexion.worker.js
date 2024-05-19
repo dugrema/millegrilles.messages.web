@@ -26,6 +26,24 @@ function dechiffrerCles(cleIds) {
     domaine: CONST_DOMAINE_MESSAGES, action: 'dechiffrerCles', ajouterCertificat: true})
 }
 
+function marquerLu(messageIds) {
+  let message_ids = messageIds
+  if(typeof(message_ids) === 'string') message_ids = [message_ids]
+  const commande = {message_ids}
+  return connexionClient.emitWithAck('marquerLu', commande, {
+    kind: MESSAGE_KINDS.KIND_COMMANDE, 
+    domaine: CONST_DOMAINE_MESSAGES, action: 'marquerLu', ajouterCertificat: true})
+}
+
+function supprimerMessage(messageIds) {
+  let message_ids = messageIds
+  if(typeof(message_ids) === 'string') message_ids = [message_ids]
+  const commande = {message_ids}
+  return connexionClient.emitWithAck('supprimerMessage', commande, {
+    kind: MESSAGE_KINDS.KIND_COMMANDE, 
+    domaine: CONST_DOMAINE_MESSAGES, action: 'supprimerMessage', ajouterCertificat: true})
+}
+
 // Evenements
 
 async function ecouterEvenementsMessagesUsager(cb) {
@@ -42,7 +60,7 @@ expose({
     ...connexionClient,
 
     // Requetes et commandes privees
-    syncMessages, getMessagesParIds, dechiffrerCles,
+    syncMessages, getMessagesParIds, dechiffrerCles, marquerLu, supprimerMessage,
 
     // Event listeners proteges
     ecouterEvenementsMessagesUsager, retirerEvenementsMessagesUsager,

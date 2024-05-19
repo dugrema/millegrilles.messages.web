@@ -301,3 +301,23 @@ async function retirerFichiersExpires(db) {
         curseur = await curseur.continue()
     }
 }
+
+export async function supprimerOutOfSync(userId, bucket, syncTime) {
+    console.debug("supprimerOutOfSync userId: %s, bucket: %s, syncTime: %s", userId, bucket, syncTime)
+    const db = await ouvrirDB()
+    const store = db.transaction(STORE_MESSAGES_USAGERS, 'readwrite').store
+    const index = store.index('userBucket')
+    let curseur = await index.openCursor([userId, bucket])
+    const supprimes = []
+    while(curseur) {
+        const curseurSyncTime = curseur.value.syncTime
+        console.debug("supprimerOutOfSync Verifier time %s (%O)", curseurSyncTime, curseur.value)
+        if(curseurSyncTime < syncTime) {
+            // Supprimer message
+            await curseur.delete()
+            supprimes.push(curseur.value.message_id)
+        }
+        curseur = await curseur.continue()
+    }
+    return supprimes
+}
