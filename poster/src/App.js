@@ -5,11 +5,13 @@ import './index.scss'
 
 const PosterMessage = lazy(()=>import('./PosterMessage'))
 
+const urlPoster = 'https://thinkcentre1.maple.maceroc.com/reception/message'
+
 function App() {
   return (
     <div className="App">
       <Suspense load={Loading}>
-        <PosterMessage />
+        <PosterMessage urlPoster={urlPoster} />
       </Suspense>
     </div>
   );
