@@ -1,0 +1,105 @@
+@use "sass:map";
+
+@import "./overrides.scss";
+@import "~bootstrap/scss/bootstrap";
+
+$menu-body-color: $fourth-color;
+$menu-body-bg: $third-color;
+
+.header {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+
+    /* sticky */
+    position: fixed;
+    top: 0;
+    width: 100%;
+
+    z-index: 200;
+}
+
+.header, .footer {
+    background-color: $menu-body-bg;
+}
+
+DIV.container {
+    overflow: hidden;
+}
+
+.contenu {
+    padding-top: 1.0rem;
+}
+
+.fullscreen .contenu {
+    padding: 0;
+}
+
+.contenu .titre {
+    padding-top: 0.25rem;
+}
+
+.contenu .titre .bouton {
+    text-align: right;
+    margin-top: 0.1rem;
+}
+
+.boutons button {
+    width: 10rem;
+}
+.boutons div {
+    text-align: center;
+    padding-bottom: 0.25rem;
+}
+$small-width: map.get($grid-breakpoints, sm);
+// @media (max-width: $small-width) {
+//     .boutons button { text-align: center; }  
+//}
+@media (min-width: $small-width) {
+    div.bouton-gauche { text-align: right; }
+    div.bouton-droite { text-align: left; }  
+}
+
+.idmg {
+    font-size: smaller;
+}
+
+.menu-section-droite div {
+    display: inline;
+}
+
+/* Boutons actifs */
+button.bouton-actif i {
+    margin-left: 0.5rem;
+}
+button.bouton-actif.succes {
+    background: $green;
+    border-color: $second-color;
+}
+button.bouton-actif.echec {
+    background: $red;
+    border-color: $second-color;
+}
+
+/* Overrides pour dropdowns */
+.form-select:disabled {
+    background-color: $second-color;
+}
+
+.dropdown-menu {
+    background-color: $second-color;
+}
+
+.dropdown-item {
+    background-color: $second-color;
+}
+
+.buttonbar {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.buttonbar button {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
