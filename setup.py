@@ -21,13 +21,13 @@ def get_version():
 
 
 setup(
-    name='millegrilles_senseurspassifs',
+    name='millegrilles_messages',
     version='%s' % get_version(),
     packages=find_packages(),
-    url='https://github.com/dugrema/millegrilles.senseurspassifs',
+    url='https://github.com/dugrema/millegrilles.messages.web',
     license='AFFERO',
     author='Mathieu Dugre',
     author_email='mathieu.dugre@mdugre.info',
-    description="Client web et serveur pour application Senseurs Passifs de MilleGrilles",
+    description="Client web et serveur pour application Messages de MilleGrilles",
     install_requires=[]
 )
