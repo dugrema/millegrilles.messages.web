@@ -1,0 +1,14 @@
+Mode local, utilise url du navigateur avec le port https regulier (443)
+{
+    "local": true
+}
+
+Endpoint pour la reception de message.
+{
+    "urlPoster": "https://HOSTNAME/reception/message"
+}
+
+Liste d'instances de la millegrille. Download fiche.json pour trouver l'adresse de reception (endpoint) de messages.
+{
+    "urlInstances": ["https://HOSTNAME"]
+}

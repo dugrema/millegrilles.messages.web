@@ -87,6 +87,10 @@ function PosterMessage(props) {
         setRepondre(repondre)
     }, [setAuteur, setRepondre])
 
+    if(!urlPoster) {
+        return <p>Chargement de l'information en cours...</p>
+    }
+
     return (
         <Container>
             <h1>Poster un message</h1>
@@ -196,7 +200,7 @@ function preparerMessage(auteur, repondre, destinataires, contenu) {
         destinataires, contenu
     }
     if(auteur) message.auteur = auteur
-    if(repondre) message.repondre = repondre
+    if(repondre) message.reply_to = repondre
 
     return message
 }
