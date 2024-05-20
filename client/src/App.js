@@ -213,6 +213,10 @@ async function traiterMessageEvenement(workers, dispatch, evenement) {
   const action = evenement.routingKey.split(".").pop()
   if(action === 'nouveauMessage') {
     await traiterEvenementNouveauMessage(workers, dispatch, evenement)
+  } else if(action === 'messageSupprime') {
+    await traiterEvenementMessageSupprime(workers, dispatch, evenement)
+  } else if(action === 'messageLu') {
+    await traiterEvenementMessageLu(workers, dispatch, evenement)
   } else {
     console.debug("traiterMessageEvenement Evenement non supporte ", evenement)
     throw new Error(`traiterMessageEvenement Action non supportee : ${action}`)
@@ -237,4 +241,20 @@ async function traiterEvenementNouveauMessage(workers, dispatch, evenement) {
   await workers.messagesDao.updateMessage(nouveauMessage)
 
   dispatch(pushDirty({liste: [message.message_id]}))
+}
+
+async function traiterEvenementMessageSupprime(workers, dispatch, evenement) {
+  const message = evenement.message
+  console.debug("traiterEvenementMessageSupprime ", evenement)
+  const messageIds = message.message_ids
+  dispatch(thunksMessages.supprimerMessages(workers, messageIds))
+    .catch(err=>console.error("traiterEvenementMessageSupprime Erreur supprimer messages", err))
+}
+
+async function traiterEvenementMessageLu(workers, dispatch, evenement) {
+  const message = evenement.message
+  console.debug("traiterEvenementMessageLu ", evenement)
+  const messageIds = message.message_ids
+  dispatch(thunksMessages.setMessagesLus(workers, messageIds))
+    .catch(err=>console.error("traiterEvenementMessageLu Erreur marquer messages lus", err))
 }

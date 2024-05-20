@@ -77,9 +77,29 @@ function creerThunks(actions, nomSlice) {
         await traiterSyncMessages(workers, opts, dispatch, getState)
     }
 
+    function supprimerMessages(workers, messageIds, opts) {
+        return (dispatch, getState) => traiterSupprimerMessages(workers, messageIds, opts, dispatch, getState)
+    }
+
+    async function traiterSupprimerMessages(workers, messageIds, opts, dispatch, getState) {
+        const userId = getState().messages.userId
+        await workers.messagesDao.supprimerMessages(userId, messageIds)
+        dispatch(actions.retirerMessages(messageIds))
+    }
+
+    function setMessagesLus(workers, messageIds, opts) {
+        return (dispatch, getState) => traiterSetMessagesLus(workers, messageIds, opts, dispatch, getState)
+    }
+
+    async function traiterSetMessagesLus(workers, messageIds, opts, dispatch, getState) {
+        const userId = getState().messages.userId
+        await workers.messagesDao.setMessagesLus(userId, messageIds)
+        dispatch(actions.setMessagesLus(messageIds))
+    }
+
     // Async actions
     const thunks = { 
-        syncMessages, changerBucket,
+        syncMessages, changerBucket, supprimerMessages, setMessagesLus,
     }
 
     return thunks

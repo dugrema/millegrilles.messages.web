@@ -191,6 +191,15 @@ function retirerMessagesAction(state, action) {
     state.listeMessages = listeFiltree
 }
 
+function setMessagesLusAction(state, action) {
+    const messageIds = action.payload
+    for(const item of state.listeMessages) {
+        if(messageIds.includes(item.message_id)) {
+            item.lu = true
+        }
+    }
+}
+
 const messagesSlice = createSlice({
     name: SLICE_NAME,
     initialState,
@@ -207,6 +216,7 @@ const messagesSlice = createSlice({
         setDirty: setDirtyAction,
         clearDechiffrage: clearDechiffrageAction,
         setDechiffrage: setDechiffrageAction,
+        setMessagesLus: setMessagesLusAction,
         retirerMessages: retirerMessagesAction,
     }
 })

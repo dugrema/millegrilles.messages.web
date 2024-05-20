@@ -321,3 +321,25 @@ export async function supprimerOutOfSync(userId, bucket, syncTime) {
     }
     return supprimes
 }
+
+export async function supprimerMessages(userId, messageIds) {
+    const db = await ouvrirDB()
+    const store = db.transaction(STORE_MESSAGES_USAGERS, 'readwrite').store
+    for(const messageId of messageIds) {
+        const messageIdb = await store.get(messageId)
+        if(messageIdb.user_id === userId) {
+            await store.delete(messageId)
+        }
+    }
+}
+
+export async function setMessagesLus(userId, messageIds) {
+    const db = await ouvrirDB()
+    const store = db.transaction(STORE_MESSAGES_USAGERS, 'readwrite').store
+    for(const messageId of messageIds) {
+        const messageIdb = await store.get(messageId)
+        if(messageIdb.user_id === userId && messageIdb.lu !== true) {
+            await store.put({...messageIdb, lu: true})
+        }
+    }
+}
