@@ -8,13 +8,14 @@ const PosterMessage = lazy(()=>import('./PosterMessage'))
 function App() {
 
   const [urlPoster, setUrlPoster] = useState('')
+  const [destinataires, setDestinataires] = useState('')
 
   return (
     <div className="App">
       <Suspense load={Loading}>
-        <PosterMessage urlPoster={urlPoster} />
+        <PosterMessage urlPoster={urlPoster} destinataires={destinataires} />
       </Suspense>
-      <TrouverAdresseServeur setUrlPoster={setUrlPoster} />
+      <TrouverAdresseServeur setUrlPoster={setUrlPoster} setDestinataires={setDestinataires} />
     </div>
   );
 }
@@ -26,23 +27,28 @@ function Loading(props) {
 }
 
 function TrouverAdresseServeur(props) {
-  const {setUrlPoster} = props
+  const {setUrlPoster, setDestinataires} = props
 
   useEffect(()=>{
     if(!setUrlPoster) return
 
     let urlMessage = `https://${window.location.host}/reception/message`
-    fetch('./config.json')
+    fetch('/poster/config.json')
       .then(async reponse => {
         const reponseContenu = await reponse.json()
         console.debug("Reponse config.json ", reponseContenu)
-        const {local, urlPoster, urlInstances} = reponseContenu
+        const {local, urlPoster, urlInstances, destinataires} = reponseContenu
+
         if(local) {
           urlMessage = `https://${window.location.hostname}/reception/message`
         } else if(urlPoster) {
           urlMessage = urlPoster
         } else if(urlInstances) {
           throw new Error("todo - charger fiches")
+        }
+
+        if(destinataires) {
+          setDestinataires(destinataires)
         }
       })
       .catch(err=>{
@@ -52,7 +58,7 @@ function TrouverAdresseServeur(props) {
         console.debug("Url local : ", urlMessage)
         setUrlPoster(urlMessage)
       })
-  }, [setUrlPoster])
+  }, [setUrlPoster, setDestinataires])
 
   return ''
 }

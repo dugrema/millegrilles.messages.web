@@ -12,3 +12,9 @@ Liste d'instances de la millegrille. Download fiche.json pour trouver l'adresse 
 {
     "urlInstances": ["https://HOSTNAME"]
 }
+
+Il est possible d'ajouter une liste predéterminée de destinataires qui ne peut pas être changée.
+{
+    "urlPoster": "https://HOSTNAME/reception/message",
+    "destinataires": ["proprietaire", "alicebobba"]
+}

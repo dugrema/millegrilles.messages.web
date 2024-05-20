@@ -1,4 +1,4 @@
-import {lazy, useState, useCallback, useEffect} from 'react'
+import {lazy, useState, useCallback, useEffect, useMemo} from 'react'
 
 import Container from 'react-bootstrap/Container'
 import Form from 'react-bootstrap/Form'
@@ -13,7 +13,7 @@ const COLS_LABEL = {xs: 12, md: 3, lg: 2}
 
 function PosterMessage(props) {
 
-    const {urlPoster} = props
+    const {urlPoster, destinataires: destinatairesForces} = props
 
     const [destinataires, setDestinataires] = useState('')
     const [auteur, setAuteur] = useState('')
@@ -71,13 +71,15 @@ function PosterMessage(props) {
         e.stopPropagation()
         e.preventDefault()
         setAttente(true)
-        poster(urlPoster, auteur, repondre, destinataires, contenu)
+        let destinatairesEffectifs = destinatairesForces
+        if(!destinatairesEffectifs) destinatairesEffectifs = destinataires
+        poster(urlPoster, auteur, repondre, destinatairesEffectifs, contenu)
             .then(confirmerHandler)
             .catch(err=>{
                 setErreur(''+err)
             })
             .finally(()=>setAttente(false))
-    }, [urlPoster, auteur, repondre, destinataires, contenu, setAttente, setErreur, confirmerHandler])
+    }, [urlPoster, auteur, repondre, destinataires, destinatairesForces, contenu, setAttente, setErreur, confirmerHandler])
 
     useEffect(()=>{
         if(!setAuteur || !setRepondre) return
@@ -86,6 +88,19 @@ function PosterMessage(props) {
         setAuteur(auteur)
         setRepondre(repondre)
     }, [setAuteur, setRepondre])
+
+    useEffect(()=>{
+        if(destinatairesForces) {
+            setDestinataires(destinatairesForces.join(' '))
+        }
+    }, [destinatairesForces, setDestinataires])
+
+    const destinatairesForcesListe = useMemo(()=>{
+        if(!destinatairesForces) return ''
+        return destinatairesForces.map((item, idx)=>{
+            return <span key={''+idx} className="destinataire">{item}</span>
+        })
+    }, [destinatairesForces])
 
     if(!urlPoster) {
         return <p>Chargement de l'information en cours...</p>
@@ -126,16 +141,22 @@ function PosterMessage(props) {
                 
                 <Form.Group as={Row}>
                     <Form.Label {...COLS_LABEL} as={Col}>Destinataires</Form.Label>
-                    <Col>
-                        <Form.Control 
-                            type='text'
-                            placeholder='e.g. proprietaire alicebobba'
-                            aria-label='Destinataire' 
-                            value={destinataires}
-                            onChange={destinatairesHandler} />
-                        <Form.Text id="passwordHelpBlock" muted>
-                            Destinataires. Séparer les noms d'usager par un espace.
-                        </Form.Text>
+                    <Col className='destinataires'>
+                    {destinatairesForcesListe?
+                        <>{destinatairesForcesListe}</>
+                        :
+                        <>
+                            <Form.Control 
+                                type='text'
+                                placeholder='e.g. proprietaire alicebobba'
+                                aria-label='Destinataire' 
+                                value={destinataires}
+                                onChange={destinatairesHandler} />
+                            <Form.Text id="passwordHelpBlock" muted>
+                                Destinataires. Séparer les noms d'usager par un espace.
+                            </Form.Text>
+                        </>
+                    }
                     </Col>
                 </Form.Group>
 
@@ -174,20 +195,21 @@ export default PosterMessage
 async function poster(urlPoster, auteur, repondre, destinataires, contenu) {
     const axios = (await import('axios')).default
 
-    const destinatairesArray = destinataires.split(' ')
-    if(destinatairesArray.length === 0) {
+    if(typeof(destinataires) === 'string') destinataires = destinataires.split(' ')
+    
+    if(destinataires.length === 0) {
         throw new Error("Il faut au moins 1 destinataire")
     }
     if(!contenu || contenu === '') {
         throw new Error("Le contenu ne doit pas etre vide")
     }
 
-    console.debug("Poster a %O contenu %O", destinatairesArray, contenu)
+    console.debug("Poster a %O contenu %O", destinataires, contenu)
     console.debug("Auteur : %s\nRepondre : %s", auteur, repondre)
     const posterURL = new URL(urlPoster)
     console.debug("URL poster : %O", posterURL)
 
-    const message = preparerMessage(auteur, repondre, destinatairesArray, contenu)
+    const message = preparerMessage(auteur, repondre, destinataires, contenu)
     console.debug("Poster ", message)
     const reponse = await axios({method: 'POST', url: posterURL.href, data: message, timeout: 20_000})
 

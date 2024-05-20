@@ -24,3 +24,11 @@ code {
   margin-right: 0.5rem;
   width: 7rem;
 }
+
+DIV.destinataires {
+  text-align: left;
+}
+
+SPAN.destinataire {
+  padding-right: 0.5rem;
+}
