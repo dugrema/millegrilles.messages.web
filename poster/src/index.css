@@ -32,3 +32,15 @@ DIV.destinataires {
 SPAN.destinataire {
   padding-right: 0.5rem;
 }
+
+.fichier .bouton {
+  text-align: right;
+}
+
+.fichier .nom {
+  text-align: left;
+}
+
+.fichier .taille {
+  text-align: left;
+}

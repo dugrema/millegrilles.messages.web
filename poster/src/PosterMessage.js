@@ -8,6 +8,7 @@ import Col from 'react-bootstrap/Col'
 import Alert from 'react-bootstrap/Alert'
 
 const QuillEditor = lazy(()=>import('./QuillEditor'))
+const Fichiers = lazy(()=>import('./Fichiers'))
 
 const COLS_LABEL = {xs: 12, md: 3, lg: 2}
 
@@ -20,6 +21,11 @@ function PosterMessage(props) {
     const [repondre, setRepondre] = useState('')
     const [contenu, setContenu] = useState('')
 
+    // Fichiers
+    const [batchId, setBatchId] = useState('')
+    const [jwt, setJwt] = useState('')
+    const [fichiers, setFichiers] = useState('')
+
     const [attente, setAttente] = useState(false)
     const [succes, setSucces] = useState('')
     const [erreur, setErreur] = useState('')
@@ -31,8 +37,10 @@ function PosterMessage(props) {
         setContenu('')
         setSucces('')
         setErreur('')
+        setJwt('')
+        setBatchId('')
         setAttente(false)
-    }, [setDestinataires, setContenu, setSucces, setErreur, setAttente])
+    }, [setDestinataires, setContenu, setSucces, setErreur, setAttente, setJwt, setBatchId])
 
     const auteurHandler = useCallback(e=>{
         const auteur = e.currentTarget.value
@@ -80,6 +88,12 @@ function PosterMessage(props) {
             })
             .finally(()=>setAttente(false))
     }, [urlPoster, auteur, repondre, destinataires, destinatairesForces, contenu, setAttente, setErreur, confirmerHandler])
+
+    const jwtHandler = useCallback(contenu=>{
+        if(!contenu) return
+        setJwt(contenu.token)
+        setBatchId(contenu.batchId)
+    }, [setJwt, setBatchId])
 
     useEffect(()=>{
         if(!setAuteur || !setRepondre) return
@@ -162,6 +176,18 @@ function PosterMessage(props) {
 
                 <QuillEditor value={contenu} onChange={setContenu} />
 
+                <Fichiers 
+                    urlPoster={urlPoster}
+                    batchId={batchId}
+                    setBatchId={setBatchId}
+                    jwt={jwt}
+                    setJwt={setJwt}
+                    fichiers={fichiers}
+                    setFichiers={setFichiers}
+                />
+                
+                <br/>
+
                 <Alert show={attente} variant="primary">
                     <Alert.Heading>Transmission</Alert.Heading>
                     <p>Transmission du message en cours</p>
@@ -192,7 +218,7 @@ function PosterMessage(props) {
 export default PosterMessage
 
 
-async function poster(urlPoster, auteur, repondre, destinataires, contenu) {
+async function poster(urlPoster, auteur, repondre, destinataires, contenu, batchId, jwt, fichiers) {
     const axios = (await import('axios')).default
 
     if(typeof(destinataires) === 'string') destinataires = destinataires.split(' ')
