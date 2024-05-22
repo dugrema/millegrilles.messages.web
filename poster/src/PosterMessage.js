@@ -22,8 +22,8 @@ function PosterMessage(props) {
     const [contenu, setContenu] = useState('')
 
     // Fichiers
-    const [batchId, setBatchId] = useState('')
-    const [jwt, setJwt] = useState('')
+    // const [batchId, setBatchId] = useState('')
+    // const [jwt, setJwt] = useState('')
     const [fichiers, setFichiers] = useState('')
 
     const [attente, setAttente] = useState(false)
@@ -37,10 +37,11 @@ function PosterMessage(props) {
         setContenu('')
         setSucces('')
         setErreur('')
-        setJwt('')
-        setBatchId('')
+        // setJwt('')
+        // setBatchId('')
         setAttente(false)
-    }, [setDestinataires, setContenu, setSucces, setErreur, setAttente, setJwt, setBatchId])
+        setFichiers('')
+    }, [setDestinataires, setContenu, setSucces, setErreur, setAttente, setFichiers])
 
     const auteurHandler = useCallback(e=>{
         const auteur = e.currentTarget.value
@@ -81,19 +82,19 @@ function PosterMessage(props) {
         setAttente(true)
         let destinatairesEffectifs = destinatairesForces
         if(!destinatairesEffectifs) destinatairesEffectifs = destinataires
-        poster(urlPoster, auteur, repondre, destinatairesEffectifs, contenu)
+        poster(urlPoster, auteur, repondre, destinatairesEffectifs, contenu, fichiers)
             .then(confirmerHandler)
             .catch(err=>{
                 setErreur(''+err)
             })
             .finally(()=>setAttente(false))
-    }, [urlPoster, auteur, repondre, destinataires, destinatairesForces, contenu, setAttente, setErreur, confirmerHandler])
+    }, [urlPoster, auteur, repondre, destinataires, destinatairesForces, contenu, fichiers, setAttente, setErreur, confirmerHandler])
 
-    const jwtHandler = useCallback(contenu=>{
-        if(!contenu) return
-        setJwt(contenu.token)
-        setBatchId(contenu.batchId)
-    }, [setJwt, setBatchId])
+    // const jwtHandler = useCallback(contenu=>{
+    //     if(!contenu) return
+    //     setJwt(contenu.token)
+    //     setBatchId(contenu.batchId)
+    // }, [setJwt, setBatchId])
 
     useEffect(()=>{
         if(!setAuteur || !setRepondre) return
@@ -178,10 +179,10 @@ function PosterMessage(props) {
 
                 <Fichiers 
                     urlPoster={urlPoster}
-                    batchId={batchId}
-                    setBatchId={setBatchId}
-                    jwt={jwt}
-                    setJwt={setJwt}
+                    // batchId={batchId}
+                    // setBatchId={setBatchId}
+                    // jwt={jwt}
+                    // setJwt={setJwt}
                     fichiers={fichiers}
                     setFichiers={setFichiers}
                 />
@@ -218,7 +219,7 @@ function PosterMessage(props) {
 export default PosterMessage
 
 
-async function poster(urlPoster, auteur, repondre, destinataires, contenu, batchId, jwt, fichiers) {
+async function poster(urlPoster, auteur, repondre, destinataires, contenu, fichiers) {
     const axios = (await import('axios')).default
 
     if(typeof(destinataires) === 'string') destinataires = destinataires.split(' ')
@@ -237,7 +238,18 @@ async function poster(urlPoster, auteur, repondre, destinataires, contenu, batch
 
     const message = preparerMessage(auteur, repondre, destinataires, contenu)
     console.debug("Poster ", message)
-    const reponse = await axios({method: 'POST', url: posterURL.href, data: message, timeout: 20_000})
+
+    let reponse = null
+    if(!fichiers || fichiers.length === 0) {
+        reponse = await axios({method: 'POST', url: posterURL.href, data: message, timeout: 20_000})
+    } else {
+        // Post multipart
+        const uploadForm = {
+            message: JSON.stringify(message),
+            'files[]': fichiers
+        }    
+        reponse = await axios.postForm(posterURL.href, uploadForm)
+    }
 
     console.debug("Repondre POST : ", reponse)
     return reponse.data
