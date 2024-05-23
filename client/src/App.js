@@ -11,6 +11,7 @@ import useWorkers, {useEtatConnexion, useEtatConnexionOpts, WorkerProvider, useU
 import storeSetup from './redux/store'
 
 import { setUserId as setUserIdMessages, pushDirty, thunks as thunksMessages } from './redux/messagesSlice'
+import { setUserId as setUserIdDownload, supprimerDownloadsParEtat, continuerDownload, arreterDownload, setDownloads } from './redux/downloaderSlice'
 
 import i18n from './i18n'
 
@@ -178,6 +179,7 @@ function ReceptionMessageListener(props) {
   // Setup userId dans redux
   useEffect(()=>{
     dispatch(setUserIdMessages(userId))
+    dispatch(setUserIdDownload(userId))
   }, [dispatch, userId])
   
 

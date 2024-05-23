@@ -19,8 +19,9 @@ function getMessagesParIds(messageIds) {
     domaine: CONST_DOMAINE_MESSAGES, action: 'getMessagesParIds', ajouterCertificat: true})
 }
 
-function dechiffrerCles(cleIds) {
-  const requete = {cle_ids: cleIds}
+function dechiffrerCles(cleIds, estCleFichier) {
+  estCleFichier = !!estCleFichier
+  const requete = {cle_ids: cleIds, cles_fichiers: estCleFichier}
   return connexionClient.emitWithAck('dechiffrerCles', requete, {
     kind: MESSAGE_KINDS.KIND_REQUETE, 
     domaine: CONST_DOMAINE_MESSAGES, action: 'dechiffrerCles', ajouterCertificat: true})

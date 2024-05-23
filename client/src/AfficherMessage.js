@@ -4,8 +4,10 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 
-import { FormatterDate } from '@dugrema/millegrilles.reactjs'
+import { useDispatch, useSelector } from 'react-redux'
 
+import { FormatterDate, FormatteurTaille } from '@dugrema/millegrilles.reactjs'
+import { ajouterDownload, ajouterZipDownload } from './redux/downloaderSlice'
 import useWorkers from './WorkerContext'
 
 function AfficherMessage(props) {
@@ -56,6 +58,7 @@ function Message(props) {
         <div>
             <EnteteMessage value={value} onSupprimerMessage={onSupprimerMessage} />
             <ContenuMessage value={value} />
+            <Fichiers value={value} />
         </div>
     )
 }
@@ -129,5 +132,64 @@ function ContenuMessage(props) {
             <ReactQuill className="afficher" value={value.message.contenu} readOnly={true} theme=''/>
             <br className="clear"/>
         </>
+    )
+}
+
+function Fichiers(props) {
+    const {value} = props
+
+    const fichiers = useMemo(()=>{
+        if(!value) return
+        const message = value.message || {}
+        const fichiers = message.fichiers
+        if(!fichiers || fichiers.length === 0) return
+        return fichiers
+    }, [value])
+
+    if(!fichiers) return ''
+
+    return (
+        <div>
+            {fichiers.map((item, idx)=>{
+                return <Fichier key={''+idx} value={item} />
+            })}
+        </div>
+    )
+}
+
+function Fichier(props) {
+    const {value} = props
+    const {nom, mimetype, fuuid, cle_id, taille_chiffre, nonce, format} = value
+
+    const workers = useWorkers()
+    const dispatch = useDispatch()
+
+    const downloadHandler = useCallback(()=>{
+        const fichier = {
+            fuuid,
+            nom,
+            version_courante: {
+                cle_id,
+                nonce,
+                format,
+                fuuid,
+            },
+            fuuidDownload: fuuid,
+            taille: taille_chiffre,
+            noSave: false,
+        }
+        // console.debug("!!! Modals.downloadAction params %O, fichier %O, infoVideo: %O", params, fichier, infoVideo)
+        dispatch(ajouterDownload(workers, fichier))
+            .catch(err=>console.error('Erreur ajout download', err))
+        // dispatch(ajouterDownload(fuuid))
+    }, [workers, dispatch, fuuid, nom, mimetype, taille_chiffre, cle_id])
+
+    return (
+        <Row className="rowFichier">
+            <Col xs={12} md={8} className="nomFichier">{nom}</Col>
+            <Col xs={7} md={2} className="mimetypeFichier">{mimetype}</Col>
+            <Col xs={5} md={2} className="tailleFichier"><FormatteurTaille value={taille_chiffre}/></Col>
+            <Col><Button onClick={downloadHandler}>DD</Button></Col>
+        </Row>
     )
 }

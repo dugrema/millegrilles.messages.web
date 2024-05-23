@@ -2,7 +2,9 @@ import { openDB } from 'idb'
 
 export const DB_NAME = 'messages',
              STORE_MESSAGES_USAGERS = 'messagesUsagers',
-             VERSION_COURANTE = 3
+             STORE_DOWNLOADS = 'downloads',
+             STORE_DOWNLOADS_FICHIERS = 'downloadsFichiers',
+             VERSION_COURANTE = 4
 
 function ouvrirDB(opts) {
     opts = opts || {}
@@ -34,7 +36,10 @@ function createObjectStores(db, oldVersion, newVersion, transaction) {
             case 2: // Version initiale
                 messagesStore = db.createObjectStore(STORE_MESSAGES_USAGERS, {keyPath: 'message_id'})
                 messagesStore.createIndex('userBucket', ['user_id', 'bucket'], {unique: false, multiEntry: false})
-            case 3: // Version courante
+            case 3:
+                db.createObjectStore(STORE_DOWNLOADS, {keyPath: 'fuuid'})                
+                db.createObjectStore(STORE_DOWNLOADS_FICHIERS, {keyPath: ['fuuid', 'position']})
+            case 4: // Version courante
                 break
             default:
                 console.warn("createObjectStores Default..., version %O", oldVersion)
