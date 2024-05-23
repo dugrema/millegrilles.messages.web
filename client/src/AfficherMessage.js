@@ -149,11 +149,14 @@ function Fichiers(props) {
     if(!fichiers) return ''
 
     return (
-        <div>
-            {fichiers.map((item, idx)=>{
-                return <Fichier key={''+idx} value={item} />
-            })}
-        </div>
+        <>
+            <hr />
+            <div>
+                {fichiers.map((item, idx)=>{
+                    return <Fichier key={''+idx} value={item} />
+                })}
+            </div>
+        </>
     )
 }
 
@@ -186,10 +189,12 @@ function Fichier(props) {
 
     return (
         <Row className="rowFichier">
-            <Col xs={12} md={8} className="nomFichier">{nom}</Col>
-            <Col xs={7} md={2} className="mimetypeFichier">{mimetype}</Col>
-            <Col xs={5} md={2} className="tailleFichier"><FormatteurTaille value={taille_chiffre}/></Col>
-            <Col><Button onClick={downloadHandler}>DD</Button></Col>
+            <Col xs={9} md={9} xl={8} className="nomFichier">
+                <Button variant="secondary" className="btn-sm" onClick={downloadHandler}><i className="fa fa-lg fa-cloud-download"/></Button>
+                {nom}
+            </Col>
+            <Col xl={2} className="d-none d-xl-block mimetypeFichier">{mimetype}</Col>
+            <Col xs={3} md={3} className="tailleFichier"><FormatteurTaille value={taille_chiffre}/></Col>
         </Row>
     )
 }

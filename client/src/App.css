@@ -91,3 +91,11 @@ div.table div.table-header {
 .messageliste .selectionne {
   background-color: darkblue;
 }
+
+.rowFichier {
+  padding-bottom: 0.3rem;
+}
+
+.nomFichier BUTTON {
+  margin-right: 0.2rem;
+}

@@ -47,6 +47,11 @@ export function useCleMillegrilleChargee() {
     return useContext(Context).cleMillegrilleChargee
 }
 
+export function useModalTransfertEnCours() {
+    return [useContext(Context).modalTransfertEnCours, useContext(Context).setModalTransfertEnCours]
+}
+
+
 // Provider
 export function WorkerProvider(props) {
 
@@ -58,6 +63,7 @@ export function WorkerProvider(props) {
     const [formatteurPret, setFormatteurPret] = useState('')
     const [infoConnexion, setInfoConnexion] = useState('')
     const [cleMillegrilleChargee, setCleMillegrilleChargee] = useState(false)
+    const [modalTransfertEnCours, setModalTransfertEnCours] = useState(false)
 
     const setEtatConnexionCb = useCallback((etat, opts) => {
         opts = opts || {}
@@ -72,8 +78,14 @@ export function WorkerProvider(props) {
     }, [etatConnexion, usager, formatteurPret])
 
     const value = useMemo(()=>{
-        if(workersPrets) return { usager, etatConnexion, etatConnexionOpts, formatteurPret, etatAuthentifie, infoConnexion, etatPret, cleMillegrilleChargee }
-    }, [workersPrets, usager, etatConnexion, etatConnexionOpts, formatteurPret, etatAuthentifie, infoConnexion, etatPret, cleMillegrilleChargee])
+        if(workersPrets) return { 
+            usager, etatConnexion, etatConnexionOpts, formatteurPret, etatAuthentifie, infoConnexion, etatPret, cleMillegrilleChargee,
+            modalTransfertEnCours, setModalTransfertEnCours,
+        }
+    }, [
+        workersPrets, usager, etatConnexion, etatConnexionOpts, formatteurPret, etatAuthentifie, infoConnexion, etatPret, cleMillegrilleChargee,
+        modalTransfertEnCours, setModalTransfertEnCours,
+    ])
 
     useEffect(()=>{
         // console.info("Initialiser web workers (ready : %O, workers : %O)", ready, _workers)
